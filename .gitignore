@@ -1,0 +1,4 @@
+/target/
+/.idea/
+.env
+/data/  (si usas H2 en archivo)
