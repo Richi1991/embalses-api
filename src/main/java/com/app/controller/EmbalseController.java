@@ -19,7 +19,7 @@ public class EmbalseController {
     @Autowired
     private EmbalseService embalseService;
 
-    @Value("${cron.job.key}")
+    @Value("${CRON_JOB_KEY}")
     private String cronKey;
 
     @GetMapping("/top-movimientos")
