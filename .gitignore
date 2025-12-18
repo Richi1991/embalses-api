@@ -1,4 +1,26 @@
+# Compilado y binarios
 /target/
+*.class
+*.jar
+*.war
+
+# IDEs (IntelliJ, Eclipse, VSCode)
 /.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
+# Configuración sensible (¡Crucial!)
+src/main/resources/application.properties
 .env
-/data/  (si usas H2 en archivo)
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs y temporales
+/logs/
+*.log
+/data/
