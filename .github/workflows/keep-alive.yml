@@ -1,0 +1,17 @@
+name: Keep API and Neon Alive
+
+on:
+  schedule:
+    # Se ejecuta cada 14 minutos
+    # Los rangos 0-1 y 6-23 UTC evitan las 2, 3, 4 y 5 AM UTC
+    # En España (UTC+1), esto apaga el job aproximadamente de 3:00 a 6:00 AM
+    - cron: '*/14 0-1,6-23 * * *'
+  workflow_dispatch: # Botón manual para probar cuando quieras
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Render and Neon
+        run: |
+          curl -f https://embalses-api.onrender.com/api/embalses/keep-alive
