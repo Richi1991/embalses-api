@@ -86,13 +86,27 @@ public class EmbalseService {
     }
 
     public void checkDatabaseNeonConnection() throws FunctionalExceptions {
-        try (Connection conn = DatabaseConfig.getConnection();
-             Statement stmt = conn.createStatement()) {
+        int intentos = 0;
+        boolean conectado = false;
 
-            stmt.executeQuery("SELECT 1");
+        while (intentos < 3 && !conectado) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 Statement stmt = conn.createStatement()) {
 
-        } catch (Exception e) {
-            Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
+                stmt.executeQuery("SELECT 1");
+                conectado = true; // Si llega aquí, todo ok
+
+            } catch (Exception e) {
+                intentos++;
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
+                }
+                try {
+                    Thread.sleep(3000); // Espera 3 segundos antes de reintentar
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
     }
 }
