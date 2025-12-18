@@ -102,7 +102,7 @@ public class EmbalseService {
                     Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
                 }
                 try {
-                    Thread.sleep(3000); // Espera 3 segundos antes de reintentar
+                    Thread.sleep(8000); // Espera 8 segundos antes de reintentar
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                 }
