@@ -139,7 +139,8 @@ public class EmbalseDAO {
                 psLectura.setDouble(2, porc);
                 psLectura.executeUpdate();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(); // Es vital para ver el detalle en los logs de Render
+                throw new RuntimeException("Error en la BD Neon: " + e.getMessage());
             }
         }
 
