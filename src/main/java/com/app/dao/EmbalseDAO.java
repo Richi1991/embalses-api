@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -124,5 +125,23 @@ public class EmbalseDAO {
             }
         }
         return lista;
+    }
+
+    public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc) throws SQLException {
+
+        String sqlInsertaLectura = "INSERT INTO historico_cuenca_segura (volumen_total, porcentaje_total, fecha_actualizacion) " +
+                "VALUES (?, ?, CURRENT_TIMESTAMP)";
+
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
+
+                psLectura.setDouble(1, volumenActualCuenca);
+                psLectura.setDouble(2, porc);
+                psLectura.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 }

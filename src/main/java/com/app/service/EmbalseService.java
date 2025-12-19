@@ -1,5 +1,6 @@
 package com.app.service;
 
+import com.app.constantes.Constants;
 import com.app.constantes.Tendencia;
 import com.app.dao.DatabaseConfig;
 import com.app.dao.EmbalseDAO;
@@ -16,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +60,36 @@ public class EmbalseService {
             } catch (Exception e) {
                 Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
             }
+    }
+
+
+    public void obtenerDatosWebAndUpdateEach3hours() throws FunctionalExceptions {
+        try {
+            configureSSL();
+
+            Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
+            String todoElTexto = doc.body().text();
+
+            // Este patrón busca: "E.Nombre (Cota) H Hm3 %"
+            // Ejemplo: E.Fuensanta (67,92) 34,69 29,184 13,9
+            Pattern p = Pattern.compile("E\\.([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+)\\s\\([^\\)]+\\)\\s[0-9,.]+\\s([0-9,.]+)\\s([0-9,.]+)");
+            Matcher m = p.matcher(todoElTexto);
+
+            double volumenActualCuenca = 0.0;
+            double porcentajeTotalCuenca = 0.0;
+            while (m.find()) {
+
+                double volumenActualEmbalse = Double.parseDouble(m.group(2).replace(",", "."));
+                volumenActualCuenca = volumenActualCuenca + volumenActualEmbalse;
+
+            }
+
+            porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
+
+            embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca);
+        } catch (Exception e) {
+            Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
+        }
     }
 
     public List<EmbalseDTO> obtenerListadoParaFront() throws FunctionalExceptions {

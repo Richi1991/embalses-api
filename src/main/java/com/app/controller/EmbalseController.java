@@ -53,13 +53,13 @@ public class EmbalseController {
      * Este método lo llamará un Cron-job cada 3 horas.
      * SÍ hace scraping y guarda en la base de datos.
      */
-    @PostMapping("/internal-refresh")
+    @GetMapping("/internal-refresh")
     public ResponseEntity<String> triggerUpdate(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
         if (key == null || !key.equals(cronKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
         }
 
-        embalseService.obtenerAndActualizarDatosDeLaWeb();
+        embalseService.obtenerDatosWebAndUpdateEach3hours();
         return ResponseEntity.ok("Datos actualizados en Neon");
     }
 
