@@ -129,7 +129,7 @@ public class EmbalseDAO {
 
     public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc) throws SQLException {
 
-        String sqlInsertaLectura = "INSERT INTO historico_cuenca_segura (volumen_total, porcentaje_total, fecha_actualizacion) " +
+        String sqlInsertaLectura = "INSERT INTO historico_cuenca_segura (volumen_total, porcentaje_total, fecha_registro) " +
                 "VALUES (?, ?, CURRENT_TIMESTAMP)";
 
         try (Connection conn = DatabaseConfig.getConnection()) {
