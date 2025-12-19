@@ -2,14 +2,13 @@ package com.app.dao;
 
 import com.app.constantes.Tendencia;
 import com.app.dto.EmbalseDTO;
+import com.app.dto.HistoricoCuencaDTO;
+import com.app.exceptions.Exceptions;
+import com.app.exceptions.FunctionalExceptions;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -143,6 +142,70 @@ public class EmbalseDAO {
                 throw new RuntimeException("Error en la BD Neon: " + e.getMessage());
             }
         }
+    }
 
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList() throws FunctionalExceptions {
+
+        int intentos = 0;
+        boolean exito = false;
+
+        String sqlSelect = "SELECT volumen_total, porcentaje_total, fecha_registro FROM historico_cuenca_segura ORDER BY fecha_registro ASC";
+
+        List<HistoricoCuencaDTO> historicoCuencaDTOList = new ArrayList<>();
+
+        while (intentos < 3 && !exito) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlSelect);
+                 ResultSet rs = ps.executeQuery()) {
+
+                 exito = true;
+
+                while (rs.next()) {
+
+                    historicoCuencaDTOList.add(new HistoricoCuencaDTO(
+                            rs.getDouble("volumen_total"),
+                            rs.getDouble("porcentaje_total"),
+                            rs.getTimestamp("fecha_registro")
+                    ));
+                }
+
+            } catch (Exception e) {
+                intentos++;
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
+                }
+                manejarEspera(3000L);
+            }
+        }
+        return historicoCuencaDTOList;
+    }
+
+    public void checkDatabaseConnection() throws FunctionalExceptions {
+        int intentos = 0;
+        boolean conectado = false;
+
+        while (intentos < 3 && !conectado) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 Statement stmt = conn.createStatement()) {
+
+                stmt.executeQuery("SELECT 1");
+                conectado = true; // Si llega aquí, todo ok
+
+            } catch (Exception e) {
+                intentos++;
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
+                }
+                manejarEspera(8000L);
+            }
+        }
+    }
+
+    public void manejarEspera(Long time) {
+        try {
+            Thread.sleep(time); // Espera X segundos antes de reintentar
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

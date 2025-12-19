@@ -5,6 +5,7 @@ import com.app.constantes.Tendencia;
 import com.app.dao.DatabaseConfig;
 import com.app.dao.EmbalseDAO;
 import com.app.dto.EmbalseDTO;
+import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
 import org.jsoup.Jsoup;
@@ -17,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -118,27 +118,12 @@ public class EmbalseService {
     }
 
     public void checkDatabaseNeonConnection() throws FunctionalExceptions {
-        int intentos = 0;
-        boolean conectado = false;
+        embalseDAO.checkDatabaseConnection();
+    }
 
-        while (intentos < 3 && !conectado) {
-            try (Connection conn = DatabaseConfig.getConnection();
-                 Statement stmt = conn.createStatement()) {
 
-                stmt.executeQuery("SELECT 1");
-                conectado = true; // Si llega aquí, todo ok
 
-            } catch (Exception e) {
-                intentos++;
-                if (intentos >= 3) {
-                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
-                }
-                try {
-                    Thread.sleep(8000); // Espera 8 segundos antes de reintentar
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
+    public List<HistoricoCuencaDTO> getHistoricoCuenca() throws FunctionalExceptions {
+        return embalseDAO.getHistoricoCuencaSeguraList();
     }
 }

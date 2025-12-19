@@ -1,6 +1,7 @@
 package com.app.controller;
 
 import com.app.dto.EmbalseDTO;
+import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,12 +50,18 @@ public class EmbalseController {
         }
     }
 
+    @GetMapping("/historico-cuenca")
+    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuenca() throws FunctionalExceptions {
+        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuenca();
+        return ResponseEntity.ok(datos);
+    }
+
     /**
      * Este método lo llamará un Cron-job cada 3 horas.
      * SÍ hace scraping y guarda en la base de datos.
      */
     @PostMapping("/internal-refresh")
-    public ResponseEntity<String> triggerUpdate(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
+    public ResponseEntity<String> getDataWebAndUpdateEach3hours(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
         if (key == null || !key.equals(cronKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
         }
