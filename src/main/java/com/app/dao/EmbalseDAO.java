@@ -215,7 +215,8 @@ public class EmbalseDAO {
     public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
         List<EmbalseDTO> embalseDTOList = new ArrayList<>();
 
-        String sqlHistoricoEmbalse = "SELECT * FROM lecturas_embalses WHERE embalse_id = ? ORDER BY fecha_registro ASC";
+        String sqlHistoricoEmbalse = "SELECT lecturas.*, emb.nombre AS nombre_embalse FROM lecturas_embalses lecturas " +
+                "JOIN embalses emb ON lecturas.embalse_id = emb.id WHERE lecturas.embalse_id = ? ORDER BY lecturas.fecha_registro ASC";
 
         int intentos = 0;
         boolean conectado = false;
@@ -237,7 +238,7 @@ public class EmbalseDAO {
 
                         embalseDTOList.add(new EmbalseDTO(
                                 rs.getInt("embalse_id"),
-                                rs.getString("embalse"),
+                                rs.getString("nombre_embalse"),
                                 rs.getDouble("hm3_actual"),
                                 rs.getDouble("porcentaje"),
                                 rs.getDouble("variacion"),
