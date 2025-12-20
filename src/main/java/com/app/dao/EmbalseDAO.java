@@ -99,7 +99,7 @@ public class EmbalseDAO {
 
         // DISTINCT ON nos da la fila más reciente (fecha_registro DESC) para cada embalse
         String sql = "SELECT DISTINCT ON (e.id) " +
-                "e.nombre, l.hm3_actual, l.porcentaje, l.variacion, l.tendencia " +
+                "l.embalse_id, e.nombre, l.hm3_actual, l.porcentaje, l.variacion, l.tendencia, l.fecha_registro " +
                 "FROM embalses e " +
                 "JOIN lecturas_embalses l ON e.id = l.embalse_id " +
                 "ORDER BY e.id, l.fecha_registro DESC";
@@ -121,7 +121,8 @@ public class EmbalseDAO {
                         rs.getDouble("hm3_actual"),
                         rs.getDouble("porcentaje"),
                         rs.getDouble("variacion"),
-                        tendenciaEnum, Timestamp.valueOf(LocalDate.now().atStartOfDay())
+                        tendenciaEnum,
+                        rs.getTimestamp("fecha_registro")
                 ));
             }
         }
