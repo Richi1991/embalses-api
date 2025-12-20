@@ -4,7 +4,6 @@ import com.app.dto.EmbalseDTO;
 import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
-import com.app.service.PDFExtractorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -20,9 +19,6 @@ public class EmbalseController {
 
     @Autowired
     private EmbalseService embalseService;
-
-    @Autowired
-    private PDFExtractorService pdfExtractorService;
 
     @Value("${CRON_JOB_KEY}")
     private String cronKey;
@@ -72,20 +68,6 @@ public class EmbalseController {
 
         embalseService.obtenerDatosWebAndUpdateEach3hours();
         return ResponseEntity.ok("Datos actualizados en Neon");
-    }
-
-    @PostMapping("/insert-archivos-diarios-chs/{anio}")
-    public ResponseEntity<String> getEmbalseHistoricalDiaryData(@PathVariable int anio, @RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
-        if (key == null || !key.equals(cronKey)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
-        }
-
-        try {
-            embalseService.volcadoHistoricoIndividual(anio);
-        } catch (Exception e){
-            Exceptions.EMB_E_0005.lanzarExcepcionCausada(e);
-        }
-        return ResponseEntity.ok("Datos diarios insertados correctamente");
     }
 
 }

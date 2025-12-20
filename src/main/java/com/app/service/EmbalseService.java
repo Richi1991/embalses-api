@@ -9,16 +9,12 @@ import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -27,17 +23,17 @@ import java.util.regex.Pattern;
 @Service
 public class EmbalseService {
 
+    public EmbalseService() throws NoSuchAlgorithmException, KeyManagementException {
+        configureSSL();
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(EmbalseService.class);
 
     @Autowired
     private EmbalseDAO embalseDAO;
 
-    @Autowired
-    private PDFExtractorService pdfExtractorService;
-
     public void obtenerAndActualizarDatosDeLaWeb() throws FunctionalExceptions {
         try {
-            configureSSL();
-
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
             String todoElTexto = doc.body().text();
 
@@ -70,8 +66,6 @@ public class EmbalseService {
 
     public void obtenerDatosWebAndUpdateEach3hours() throws FunctionalExceptions {
         try {
-            configureSSL();
-
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
             String todoElTexto = doc.body().text();
 
@@ -108,6 +102,18 @@ public class EmbalseService {
         return lista;
     }
 
+
+
+    public void checkDatabaseNeonConnection() throws FunctionalExceptions {
+        embalseDAO.checkDatabaseConnection();
+    }
+
+
+
+    public List<HistoricoCuencaDTO> getHistoricoCuenca() throws FunctionalExceptions {
+        return embalseDAO.getHistoricoCuencaSeguraList();
+    }
+
     private void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
         javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
                 new javax.net.ssl.X509TrustManager() {
@@ -120,60 +126,6 @@ public class EmbalseService {
         javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
         sc.init(null, trustAllCerts, new java.security.SecureRandom());
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    }
-
-    public void checkDatabaseNeonConnection() throws FunctionalExceptions {
-        embalseDAO.checkDatabaseConnection();
-    }
-
-
-
-    public List<HistoricoCuencaDTO> getHistoricoCuenca() throws FunctionalExceptions {
-        return embalseDAO.getHistoricoCuencaSeguraList();
-    }
-
-    /**
-     *
-     * @param anio
-     */
-    @Async // Indica que este método se ejecutará en un hilo aparte
-    public void volcadoHistoricoIndividual(int anio) throws FunctionalExceptions {
-
-        LocalDate fechaInicio = LocalDate.of(anio, 1, 1);
-        LocalDate fechaFin = LocalDate.now();
-
-        for(LocalDate date = fechaInicio; !date.isAfter(fechaFin); date = date.plusDays(1)) {
-
-            int anioHidrologicoInicio = (date.getMonthValue() >= 10) ? date.getYear() : date.getYear() - 1;
-            String carpetaAnio = anioHidrologicoInicio + "-" + String.valueOf(anioHidrologicoInicio + 1).substring(2);
-
-            // Construimos la nueva URL: ParteOficial_YYYYMMDD.pdf
-            String urlPdf = String.format(
-                    "https://chsegura.es/static/boletin_diario/%s/ParteOficial_%d%02d%02d.pdf",
-                    carpetaAnio,
-                    date.getYear(),
-                    date.getMonthValue(),
-                    date.getDayOfMonth()
-            );
-
-
-            // 3. Verificación y procesado
-            if (existeArchivo(urlPdf)) {
-                System.out.println("Procesando: " + urlPdf);
-                List<EmbalseDTO> lecturasDelDia = pdfExtractorService.extraerDatosDesdePdf(urlPdf, date);
-                embalseDAO.insertarValoresDiariosTodosEmbalses(lecturasDelDia);
-            }
-        }
-    }
-
-    private boolean existeArchivo(String urlPdf) {
-        try {
-            HttpURLConnection huc = (HttpURLConnection) new URL(urlPdf).openConnection();
-            huc.setRequestMethod("HEAD");
-            return (huc.getResponseCode() == HttpURLConnection.HTTP_OK);
-        } catch (Exception e) {
-            return false;
-        }
     }
 
 }
