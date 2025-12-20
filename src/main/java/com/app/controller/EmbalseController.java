@@ -69,5 +69,10 @@ public class EmbalseController {
         embalseService.obtenerDatosWebAndUpdateEach3hours();
         return ResponseEntity.ok("Datos actualizados en Neon");
     }
+    @GetMapping("/obtener_historico_embalse{idEmbalse}")
+    public ResponseEntity<List<EmbalseDTO>> obtenerHistoricoEmbalsePorIdEmbalse(@PathVariable("idEmbalse") int idEmbalse) throws FunctionalExceptions {
+        List<EmbalseDTO> historicoEmbalseList = embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+        return ResponseEntity.ok(historicoEmbalseList);
+    }
 
 }

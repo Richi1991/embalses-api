@@ -128,4 +128,7 @@ public class EmbalseService {
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
+        return embalseDAO.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+    }
 }

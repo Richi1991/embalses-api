@@ -161,7 +161,7 @@ public class EmbalseDAO {
                  PreparedStatement ps = conn.prepareStatement(sqlSelect);
                  ResultSet rs = ps.executeQuery()) {
 
-                 exito = true;
+                exito = true;
 
                 while (rs.next()) {
 
@@ -212,4 +212,48 @@ public class EmbalseDAO {
         }
     }
 
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
+        List<EmbalseDTO> embalseDTOList = new ArrayList<>();
+
+        String sqlHistoricoEmbalse = "SELECT * FROM lecturas_embalses WHERE embalse_id = ? ORDER BY fecha_registro ASC";
+
+        int intentos = 0;
+        boolean conectado = false;
+
+        while (intentos < 3 && !conectado) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlHistoricoEmbalse)) {
+
+                ps.setInt(1, idEmbalse);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    conectado = true;
+                    while (rs.next()) {
+
+                        String tendenciaBD = rs.getString("tendencia");
+                        Tendencia tendencia = (tendenciaBD != null)
+                                ? Tendencia.valueOf(tendenciaBD.toUpperCase())
+                                : Tendencia.ESTABLE;
+
+                        embalseDTOList.add(new EmbalseDTO(
+                                rs.getInt("embalse_id"),
+                                rs.getString("embalse"),
+                                rs.getDouble("hm3_actual"),
+                                rs.getDouble("porcentaje"),
+                                rs.getDouble("variacion"),
+                                tendencia,
+                                rs.getTimestamp("fecha_registro")
+                        ));
+                    }
+                }
+            } catch (SQLException e) {
+                intentos++;
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
+                }
+                manejarEspera(3000L);
+            }
+        }
+        return embalseDTOList;
+    }
 }
