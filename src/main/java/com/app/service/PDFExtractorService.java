@@ -3,7 +3,6 @@ package com.app.service;
 import com.app.dto.EmbalseDTO;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
@@ -90,7 +89,7 @@ public class PDFExtractorService {
             double porcentaje = limpiarNumero(partes[4]);
             double variacion = limpiarNumero(partes[5]);
 
-            return new EmbalseDTO(nombre, hm3, porcentaje, variacion, null, Timestamp.valueOf(fecha.atStartOfDay()));
+            return new EmbalseDTO(id, nombre, hm3, porcentaje, variacion, null, Timestamp.valueOf(fecha.atStartOfDay()));
 
         } catch (Exception e) {
             return null; // Si la línea no tiene el formato esperado, la saltamos
