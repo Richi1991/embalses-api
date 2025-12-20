@@ -2,7 +2,6 @@ package com.app.service;
 
 import com.app.constantes.Constants;
 import com.app.constantes.Tendencia;
-import com.app.dao.DatabaseConfig;
 import com.app.dao.EmbalseDAO;
 import com.app.dto.EmbalseDTO;
 import com.app.dto.HistoricoCuencaDTO;
@@ -15,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -28,6 +27,9 @@ public class EmbalseService {
 
     @Autowired
     private EmbalseDAO embalseDAO;
+
+    @Autowired
+    private PDFExtractorService pdfExtractorService;
 
     public void obtenerAndActualizarDatosDeLaWeb() throws FunctionalExceptions {
         try {
@@ -126,4 +128,30 @@ public class EmbalseService {
     public List<HistoricoCuencaDTO> getHistoricoCuenca() throws FunctionalExceptions {
         return embalseDAO.getHistoricoCuencaSeguraList();
     }
+
+    /**
+     *
+     * @param anio
+     */
+    public void volcadoHistoricoIndividual(int anio) throws SQLException {
+
+        LocalDate fechaInicio = LocalDate.of(anio, 1, 1);
+        LocalDate fechaFin = LocalDate.now();
+
+        for(LocalDate date = fechaInicio; !date.isAfter(fechaFin); date = date.plusDays(1)) {
+
+            // 1. Construir URL oficial de la CHS
+            String urlPdf = String.format(
+                    "https://chsegura.es/export/descargas/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/%d/%02d/%02d-%02d-%d.pdf",
+                    date.getYear(), date.getMonthValue(), date.getDayOfMonth(), date.getMonthValue(), date.getYear()
+            );
+
+            // 2. Extraer lista de lecturas del PDF
+            // Este método devolvería una lista de objetos, uno por cada fila de la tabla del PDF
+            List<EmbalseDTO> lecturasDelDia = pdfExtractorService.extraerDatosDesdePdf(urlPdf, date);
+
+            embalseDAO.insertarValoresDiariosTodosEmbalses(lecturasDelDia);
+        }
+    }
+
 }

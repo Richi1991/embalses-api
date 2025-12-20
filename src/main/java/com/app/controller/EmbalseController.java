@@ -4,12 +4,15 @@ import com.app.dto.EmbalseDTO;
 import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
+import com.app.service.PDFExtractorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.app.service.EmbalseService;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,6 +22,9 @@ public class EmbalseController {
 
     @Autowired
     private EmbalseService embalseService;
+
+    @Autowired
+    private PDFExtractorService pdfExtractorService;
 
     @Value("${CRON_JOB_KEY}")
     private String cronKey;
@@ -68,6 +74,16 @@ public class EmbalseController {
 
         embalseService.obtenerDatosWebAndUpdateEach3hours();
         return ResponseEntity.ok("Datos actualizados en Neon");
+    }
+
+    @GetMapping("/insert-archivos-diarios-chs")
+    public ResponseEntity<String> getEmbalseHistoricalDiaryData(int anio) throws FunctionalExceptions {
+        try {
+            embalseService.volcadoHistoricoIndividual(anio);
+        } catch (Exception e){
+            Exceptions.EMB_E_0005.lanzarExcepcionCausada(e);
+        }
+        return ResponseEntity.ok("Datos diarios insertados correctamente");
     }
 
 }

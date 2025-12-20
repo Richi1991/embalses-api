@@ -8,6 +8,7 @@ import com.app.exceptions.FunctionalExceptions;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,11 +116,12 @@ public class EmbalseDAO {
                         : Tendencia.ESTABLE;
 
                 lista.add(new EmbalseDTO(
+                        rs.getInt("embalse_id"),
                         rs.getString("nombre"),
                         rs.getDouble("hm3_actual"),
                         rs.getDouble("porcentaje"),
                         rs.getDouble("variacion"),
-                        tendenciaEnum
+                        tendenciaEnum, Timestamp.valueOf(LocalDate.now().atStartOfDay())
                 ));
             }
         }
@@ -207,5 +209,30 @@ public class EmbalseDAO {
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    public void insertarValoresDiariosTodosEmbalses(List<EmbalseDTO> lecturasDelDia) throws SQLException {
+
+        for (EmbalseDTO embalseDTO: lecturasDelDia) {
+            String sqlInsertaLectura = "INSERT INTO lecturas_embalses (embalse_id, hm3_actual, porcentaje, variacion, tendencia)"  +
+                    "VALUES (?, ?, ?, ?, ?)";
+            try (Connection conn = DatabaseConfig.getConnection()) {
+                try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
+
+                    psLectura.setInt(1, embalseDTO.idEmbalse());
+                    psLectura.setDouble(2, embalseDTO.hm3());
+                    psLectura.setDouble(3, embalseDTO.porcentaje());
+                    psLectura.setDouble(4, embalseDTO.variacion());
+                    psLectura.setString(5, Tendencia.ESTABLE.getValor());
+                    psLectura.executeUpdate();
+                } catch (SQLException e) {
+                    throw new RuntimeException("Error en la Insercción en la BD de Neon: " + e.getMessage());
+                }
+            }
+
+        }
+
+
+
     }
 }
