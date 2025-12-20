@@ -211,13 +211,15 @@ public class EmbalseDAO {
         }
     }
 
-    public void insertarValoresDiariosTodosEmbalses(List<EmbalseDTO> lecturasDelDia) throws SQLException {
+    public void insertarValoresDiariosTodosEmbalses(List<EmbalseDTO> lecturasDelDia) throws FunctionalExceptions {
+        int intentos = 0;
+        boolean conectado = false;
 
         for (EmbalseDTO embalseDTO: lecturasDelDia) {
             String sqlInsertaLectura = "INSERT INTO lecturas_embalses (embalse_id, hm3_actual, porcentaje, variacion, tendencia)"  +
                     "VALUES (?, ?, ?, ?, ?)";
-            try (Connection conn = DatabaseConfig.getConnection()) {
-                try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)){
 
                     psLectura.setInt(1, embalseDTO.idEmbalse());
                     psLectura.setDouble(2, embalseDTO.hm3());
@@ -225,14 +227,13 @@ public class EmbalseDAO {
                     psLectura.setDouble(4, embalseDTO.variacion());
                     psLectura.setString(5, Tendencia.ESTABLE.getValor());
                     psLectura.executeUpdate();
-                } catch (SQLException e) {
-                    throw new RuntimeException("Error en la Insercción en la BD de Neon: " + e.getMessage());
+            } catch (Exception e) {
+                intentos++;
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
                 }
+                manejarEspera(3000L);
             }
-
         }
-
-
-
     }
 }

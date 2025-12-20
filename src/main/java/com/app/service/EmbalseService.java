@@ -133,7 +133,7 @@ public class EmbalseService {
      *
      * @param anio
      */
-    public void volcadoHistoricoIndividual(int anio) throws SQLException {
+    public void volcadoHistoricoIndividual(int anio) throws FunctionalExceptions {
 
         LocalDate fechaInicio = LocalDate.of(anio, 1, 1);
         LocalDate fechaFin = LocalDate.now();
