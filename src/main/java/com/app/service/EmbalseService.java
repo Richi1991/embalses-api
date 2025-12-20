@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -142,17 +144,35 @@ public class EmbalseService {
 
         for(LocalDate date = fechaInicio; !date.isAfter(fechaFin); date = date.plusDays(1)) {
 
-            // 1. Construir URL oficial de la CHS
+            int anioHidrologicoInicio = (date.getMonthValue() >= 10) ? date.getYear() : date.getYear() - 1;
+            String carpetaAnio = anioHidrologicoInicio + "-" + String.valueOf(anioHidrologicoInicio + 1).substring(2);
+
+            // Construimos la nueva URL: ParteOficial_YYYYMMDD.pdf
             String urlPdf = String.format(
-                    "https://chsegura.es/export/descargas/cuenca/redes-de-control/estadisticas-hidrologicas/parte-diario/%d/%02d/%02d-%02d-%d.pdf",
-                    date.getYear(), date.getMonthValue(), date.getDayOfMonth(), date.getMonthValue(), date.getYear()
+                    "https://chsegura.es/static/boletin_diario/%s/ParteOficial_%d%02d%02d.pdf",
+                    carpetaAnio,
+                    date.getYear(),
+                    date.getMonthValue(),
+                    date.getDayOfMonth()
             );
 
-            // 2. Extraer lista de lecturas del PDF
-            // Este método devolvería una lista de objetos, uno por cada fila de la tabla del PDF
-            List<EmbalseDTO> lecturasDelDia = pdfExtractorService.extraerDatosDesdePdf(urlPdf, date);
 
-            embalseDAO.insertarValoresDiariosTodosEmbalses(lecturasDelDia);
+            // 3. Verificación y procesado
+            if (existeArchivo(urlPdf)) {
+                System.out.println("Procesando: " + urlPdf);
+                List<EmbalseDTO> lecturasDelDia = pdfExtractorService.extraerDatosDesdePdf(urlPdf, date);
+                embalseDAO.insertarValoresDiariosTodosEmbalses(lecturasDelDia);
+            }
+        }
+    }
+
+    private boolean existeArchivo(String urlPdf) {
+        try {
+            HttpURLConnection huc = (HttpURLConnection) new URL(urlPdf).openConnection();
+            huc.setRequestMethod("HEAD");
+            return (huc.getResponseCode() == HttpURLConnection.HTTP_OK);
+        } catch (Exception e) {
+            return false;
         }
     }
 
