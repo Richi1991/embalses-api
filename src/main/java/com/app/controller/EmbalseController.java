@@ -74,8 +74,12 @@ public class EmbalseController {
         return ResponseEntity.ok("Datos actualizados en Neon");
     }
 
-    @PostMapping("/insert-archivos-diarios-chs{anio}")
-    public ResponseEntity<String> getEmbalseHistoricalDiaryData(int anio) throws FunctionalExceptions {
+    @PostMapping("/insert-archivos-diarios-chs/{anio}")
+    public ResponseEntity<String> getEmbalseHistoricalDiaryData(@PathVariable int anio, @RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
+        if (key == null || !key.equals(cronKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
+        }
+
         try {
             embalseService.volcadoHistoricoIndividual(anio);
         } catch (Exception e){

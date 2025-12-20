@@ -10,6 +10,7 @@ import com.app.exceptions.FunctionalExceptions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyManagementException;
@@ -133,6 +134,7 @@ public class EmbalseService {
      *
      * @param anio
      */
+    @Async // Indica que este método se ejecutará en un hilo aparte
     public void volcadoHistoricoIndividual(int anio) throws FunctionalExceptions {
 
         LocalDate fechaInicio = LocalDate.of(anio, 1, 1);
