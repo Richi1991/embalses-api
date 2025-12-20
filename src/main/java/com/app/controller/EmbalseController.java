@@ -74,7 +74,7 @@ public class EmbalseController {
         return ResponseEntity.ok("Datos actualizados en Neon");
     }
 
-    @GetMapping("/insert-archivos-diarios-chs")
+    @PostMapping("/insert-archivos-diarios-chs")
     public ResponseEntity<String> getEmbalseHistoricalDiaryData(int anio) throws FunctionalExceptions {
         try {
             embalseService.volcadoHistoricoIndividual(anio);
