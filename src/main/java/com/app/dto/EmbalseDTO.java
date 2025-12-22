@@ -9,6 +9,7 @@ public record EmbalseDTO(
         String nombre,
         double hm3,
         double porcentaje,
+        double capacidadMaximaEmbalse,
         double variacion, // Este será el % de cambio
         Tendencia tendencia,
         Timestamp fechaRegistro// "subida", "bajada" o "estable"

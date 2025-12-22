@@ -120,6 +120,7 @@ public class EmbalseDAO {
                         rs.getString("nombre"),
                         rs.getDouble("hm3_actual"),
                         rs.getDouble("porcentaje"),
+                        rs.getDouble("capacidad_maxima"),
                         rs.getDouble("variacion"),
                         tendenciaEnum,
                         rs.getTimestamp("fecha_registro")
@@ -241,6 +242,7 @@ public class EmbalseDAO {
                                 rs.getString("nombre_embalse"),
                                 rs.getDouble("hm3_actual"),
                                 rs.getDouble("porcentaje"),
+                                rs.getDouble("capacidad_maxima"),
                                 rs.getDouble("variacion"),
                                 tendencia,
                                 rs.getTimestamp("fecha_registro")
