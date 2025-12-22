@@ -91,11 +91,11 @@ public class EmbalseService {
         }
     }
 
-    public List<EmbalseDTO> obtenerListadoParaFront() throws FunctionalExceptions {
+    public List<EmbalseDTO> obtenerListadoParaFront(String intervalo) throws FunctionalExceptions {
 
         List<EmbalseDTO> lista = new ArrayList<>();
         try {
-            lista = embalseDAO.obtenerUltimasLecturasConVariacion();
+            lista = embalseDAO.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo);
         } catch (Exception e) {
             Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
         }

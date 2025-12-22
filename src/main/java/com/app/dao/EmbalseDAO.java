@@ -94,37 +94,41 @@ public class EmbalseDAO {
         }
     }
 
-    public List<EmbalseDTO> obtenerUltimasLecturasConVariacion() throws SQLException {
+    public List<EmbalseDTO> obtenerUltimasLecturasConVariacionPorIntervalo(String intervalo) throws SQLException {
         List<EmbalseDTO> lista = new ArrayList<>();
 
-        // DISTINCT ON nos da la fila más reciente (fecha_registro DESC) para cada embalse
-        String sql = "SELECT DISTINCT ON (e.id) " +
-                "l.embalse_id, e.nombre, l.hm3_actual, l.porcentaje, l.variacion, l.tendencia, l.fecha_registro, e.capacidad_maxima " +
+        // Usamos el intervalo como parámetro en la consulta SQL
+        String sql = "WITH LecturaActual AS (" +
+                "    SELECT DISTINCT ON (embalse_id) * FROM lecturas_embalses ORDER BY embalse_id, fecha_registro DESC" +
+                "), LecturaPasada AS (" +
+                "    SELECT DISTINCT ON (embalse_id) * FROM lecturas_embalses " +
+                "    WHERE fecha_registro <= NOW() - CAST(? AS INTERVAL) " + // <--- Parámetro dinámico
+                "    ORDER BY embalse_id, fecha_registro DESC" +
+                ") " +
+                "SELECT e.id, e.nombre, e.capacidad_maxima, curr.hm3_actual, curr.porcentaje, curr.fecha_registro, " +
+                "(curr.hm3_actual - COALESCE(prev.hm3_actual, curr.hm3_actual)) AS variacion_calculada " +
                 "FROM embalses e " +
-                "JOIN lecturas_embalses l ON e.id = l.embalse_id " +
-                "ORDER BY e.id, l.fecha_registro DESC";
+                "JOIN LecturaActual curr ON e.id = curr.embalse_id " +
+                "LEFT JOIN LecturaPasada prev ON e.id = prev.embalse_id";
 
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            while (rs.next()) {
-                // Convertimos el String de la BD al Enum de Java
-                String tendenciaBD = rs.getString("tendencia");
-                Tendencia tendenciaEnum = (tendenciaBD != null)
-                        ? Tendencia.valueOf(tendenciaBD.toUpperCase())
-                        : Tendencia.ESTABLE;
+            ps.setString(1, intervalo); // Ejemplo: "1 day" o "7 days"
 
-                lista.add(new EmbalseDTO(
-                        rs.getInt("embalse_id"),
-                        rs.getString("nombre"),
-                        rs.getDouble("hm3_actual"),
-                        rs.getDouble("porcentaje"),
-                        rs.getDouble("capacidad_maxima"),
-                        rs.getDouble("variacion"),
-                        tendenciaEnum,
-                        rs.getTimestamp("fecha_registro")
-                ));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(new EmbalseDTO(
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getDouble("hm3_actual"),
+                            rs.getDouble("porcentaje"),
+                            rs.getDouble("capacidad_maxima"),
+                            rs.getDouble("variacion_calculada"),
+                            Tendencia.ESTABLE, // La tendencia la calcularemos en el Front según la variación
+                            rs.getTimestamp("fecha_registro")
+                    ));
+                }
             }
         }
         return lista;
