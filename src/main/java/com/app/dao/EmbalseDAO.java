@@ -99,7 +99,7 @@ public class EmbalseDAO {
 
         // DISTINCT ON nos da la fila más reciente (fecha_registro DESC) para cada embalse
         String sql = "SELECT DISTINCT ON (e.id) " +
-                "l.embalse_id, e.nombre, l.hm3_actual, l.porcentaje, l.variacion, l.tendencia, l.fecha_registro " +
+                "l.embalse_id, e.nombre, l.hm3_actual, l.porcentaje, l.variacion, l.tendencia, l.fecha_registro, e.capacidad_maxima " +
                 "FROM embalses e " +
                 "JOIN lecturas_embalses l ON e.id = l.embalse_id " +
                 "ORDER BY e.id, l.fecha_registro DESC";
@@ -216,7 +216,7 @@ public class EmbalseDAO {
     public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
         List<EmbalseDTO> embalseDTOList = new ArrayList<>();
 
-        String sqlHistoricoEmbalse = "SELECT lecturas.*, emb.nombre AS nombre_embalse FROM lecturas_embalses lecturas " +
+        String sqlHistoricoEmbalse = "SELECT lecturas.*, emb.nombre AS nombre_embalse, emb.capacidad_maxima FROM lecturas_embalses lecturas " +
                 "JOIN embalses emb ON lecturas.embalse_id = emb.id WHERE lecturas.embalse_id = ? ORDER BY lecturas.fecha_registro ASC";
 
         int intentos = 0;
