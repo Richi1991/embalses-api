@@ -53,13 +53,21 @@ public class EmbalseController {
      * @throws FunctionalExceptions
      */
     @GetMapping("/historico-cuenca")
-    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSegura(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
-        List<HistoricoCuencaDTO> datos = new ArrayList<>();
-        if (intervalo.equals(Constants.UN_DIA)){
-            datos = embalseService.getHistoricoCuencaSeguraUltimoDia();
-        } else {
-            datos = embalseService.getHistoricoCuencaSegura();
-        }
+    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSegura() throws FunctionalExceptions {
+        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuencaSegura();
+        return ResponseEntity.ok(datos);
+    }
+
+
+    /**
+     * Obtiene los datos de historico de cuenca del Segura diarios
+     * Los muestra en la gráfica principal
+     * @return
+     * @throws FunctionalExceptions
+     */
+    @GetMapping("/historico-cuenca-diario")
+    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSeguraDiaros() throws FunctionalExceptions {
+        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuencaSeguraUltimoDia();
 
         return ResponseEntity.ok(datos);
     }
