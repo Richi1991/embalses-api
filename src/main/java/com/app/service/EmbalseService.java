@@ -4,6 +4,7 @@ import com.app.constantes.Constants;
 import com.app.constantes.Tendencia;
 import com.app.dao.EmbalseDAO;
 import com.app.dto.EmbalseDTO;
+import com.app.dto.EmbalseEnum;
 import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,10 +45,14 @@ public class EmbalseService {
             Matcher m = p.matcher(todoElTexto);
 
                 while (m.find()) {
-                    String nombre = m.group(1).trim().toUpperCase();
+                    String nombreEmbalseObtenido = m.group(1).trim().toUpperCase();
+
+                    int idEmbalse = Arrays.stream(EmbalseEnum.values()).filter(x -> x.getNombreEmbalse().contains(nombreEmbalseObtenido))
+                            .map(EmbalseEnum::getCodigoEmbalse).findFirst().orElseThrow(() -> new RuntimeException("No se encontró el ID para el embalse: " + nombreEmbalseObtenido));
+
                     double hm3Actual = Double.parseDouble(m.group(2).replace(",", "."));
                     double porc = Double.parseDouble(m.group(3).replace(",", "."));
-                    double hm3Anterior = embalseDAO.obtenerHm3AnteriorYActualizar(nombre, hm3Actual);
+                    double hm3Anterior = embalseDAO.obtenerHm3AnteriorYActualizar(nombreEmbalseObtenido, hm3Actual);
                     double variacion = hm3Actual - hm3Anterior;
 
                     Tendencia tendencia = switch (Double.compare(variacion, 0)) {
@@ -55,7 +61,7 @@ public class EmbalseService {
                         default -> Tendencia.ESTABLE;
                     };
 
-                    embalseDAO.guardarLectura(nombre, hm3Actual, porc, variacion, tendencia);
+                    embalseDAO.guardarLectura(idEmbalse, hm3Actual, porc, variacion, tendencia);
 
                 }
             } catch (Exception e) {
@@ -64,7 +70,7 @@ public class EmbalseService {
     }
 
 
-    public void obtenerDatosWebAndUpdateEach3hours() throws FunctionalExceptions {
+    public void obtenerDatosWebAndUpdateEveryDay() throws FunctionalExceptions {
         try {
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
             String todoElTexto = doc.body().text();
@@ -85,13 +91,13 @@ public class EmbalseService {
 
             porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
 
-            embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca);
+            embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA);
         } catch (Exception e) {
             Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
         }
     }
 
-    public List<EmbalseDTO> obtenerListadoParaFront(String intervalo) throws FunctionalExceptions {
+    public List<EmbalseDTO> obtenerUltimasLecturasConVariacionPorIntervalo(String intervalo) throws FunctionalExceptions {
 
         List<EmbalseDTO> lista = new ArrayList<>();
         try {
@@ -110,8 +116,8 @@ public class EmbalseService {
 
 
 
-    public List<HistoricoCuencaDTO> getHistoricoCuenca() throws FunctionalExceptions {
-        return embalseDAO.getHistoricoCuencaSeguraList();
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSegura() throws FunctionalExceptions {
+        return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA);
     }
 
     private void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
@@ -130,5 +136,9 @@ public class EmbalseService {
 
     public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
         return embalseDAO.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+    }
+
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
+        return embalseDAO.getHistoricoCuencaSeguraUltimoDia();
     }
 }

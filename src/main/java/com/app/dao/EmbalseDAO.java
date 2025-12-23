@@ -1,16 +1,21 @@
 package com.app.dao;
 
+import com.app.constantes.Constants;
 import com.app.constantes.Tendencia;
 import com.app.dto.EmbalseDTO;
 import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
 import com.app.exceptions.FunctionalExceptions;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Repository
 public class EmbalseDAO {
@@ -49,47 +54,27 @@ public class EmbalseDAO {
         return hm3Anterior;
     }
 
-    public void guardarLectura(String nombre, double hm3, double porc, Double variacion, Tendencia tendencia) throws SQLException {
-        // Usamos esta técnica de UPDATE para garantizar que RETURNING id siempre devuelva el valor, exista o no
-        String sqlUpsertEmbalse = "INSERT INTO embalses (nombre) VALUES (?) " +
-                "ON CONFLICT (nombre) DO UPDATE SET nombre = EXCLUDED.nombre " +
-                "RETURNING id";
+    public void guardarLectura(Integer embalseId, double hm3, double porc, Double variacion, Tendencia tendencia) throws SQLException {
 
         String sqlInsertaLectura = "INSERT INTO lecturas_embalses (embalse_id, hm3_actual, porcentaje, variacion, tendencia) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConfig.getConnection()) {
-            int embalseId = -1;
+            //  Insertar la lectura asociada al ID obtenido
+            try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
+                psLectura.setInt(1, embalseId);
+                psLectura.setDouble(2, hm3);
+                psLectura.setDouble(3, porc);
 
-            // 1. Obtener o Crear el embalse en un solo paso
-            try (PreparedStatement psIns = conn.prepareStatement(sqlUpsertEmbalse)) {
-                psIns.setString(1, nombre);
-                try (ResultSet rs = psIns.executeQuery()) {
-                    if (rs.next()) {
-                        embalseId = rs.getInt("id");
-                    }
+                // Manejo de nulos para la variación (en caso de que sea la primera lectura)
+                if (variacion != null) {
+                    psLectura.setDouble(4, variacion);
+                } else {
+                    psLectura.setNull(4, java.sql.Types.DOUBLE);
                 }
-            }
 
-            // 2. Insertar la lectura asociada al ID obtenido
-            if (embalseId != -1) {
-                try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
-                    psLectura.setInt(1, embalseId);
-                    psLectura.setDouble(2, hm3);
-                    psLectura.setDouble(3, porc);
-
-                    // Manejo de nulos para la variación (en caso de que sea la primera lectura)
-                    if (variacion != null) {
-                        psLectura.setDouble(4, variacion);
-                    } else {
-                        psLectura.setNull(4, java.sql.Types.DOUBLE);
-                    }
-
-                    psLectura.setString(5, tendencia.getValor());
-                    psLectura.executeUpdate();
-                }
-            } else {
-                System.err.println("Error: No se pudo obtener el ID para el embalse: " + nombre);
+                psLectura.setString(5, tendencia.getValor());
+                psLectura.executeUpdate();
             }
         }
     }
@@ -134,9 +119,9 @@ public class EmbalseDAO {
         return lista;
     }
 
-    public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc) throws SQLException {
+    public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc, String nombreTabla) throws SQLException {
 
-        String sqlInsertaLectura = "INSERT INTO historico_cuenca_segura (volumen_total, porcentaje_total, fecha_registro) " +
+        String sqlInsertaLectura = "INSERT INTO " + nombreTabla + " (volumen_total, porcentaje_total, fecha_registro) " +
                 "VALUES (?, ?, CURRENT_TIMESTAMP)";
 
         try (Connection conn = DatabaseConfig.getConnection()) {
@@ -152,12 +137,12 @@ public class EmbalseDAO {
         }
     }
 
-    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList() throws FunctionalExceptions {
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList(String nombreTabla) throws FunctionalExceptions {
 
         int intentos = 0;
         boolean exito = false;
 
-        String sqlSelect = "SELECT volumen_total, porcentaje_total, fecha_registro FROM historico_cuenca_segura ORDER BY fecha_registro ASC";
+        String sqlSelect = "SELECT volumen_total, porcentaje_total, fecha_registro FROM " + nombreTabla + " ORDER BY fecha_registro ASC";
 
         List<HistoricoCuencaDTO> historicoCuencaDTOList = new ArrayList<>();
 
@@ -184,6 +169,38 @@ public class EmbalseDAO {
                 }
                 manejarEspera(3000L);
             }
+        }
+        return historicoCuencaDTOList;
+    }
+
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
+
+        List<HistoricoCuencaDTO> historicoCuencaDTOList = new ArrayList<>();
+        try {
+            Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
+            String todoElTexto = doc.body().text();
+
+            // Este patrón busca: "E.Nombre (Cota) H Hm3 %"
+            // Ejemplo: E.Fuensanta (67,92) 34,69 29,184 13,9
+            Pattern p = Pattern.compile("E\\.([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+)\\s\\([^\\)]+\\)\\s[0-9,.]+\\s([0-9,.]+)\\s([0-9,.]+)");
+            Matcher m = p.matcher(todoElTexto);
+
+            double volumenActualCuenca = 0.0;
+            double porcentajeTotalCuenca = 0.0;
+            while (m.find()) {
+
+                double volumenActualEmbalse = Double.parseDouble(m.group(2).replace(",", "."));
+                volumenActualCuenca = volumenActualCuenca + volumenActualEmbalse;
+
+            }
+
+            porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
+
+            this.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
+
+            historicoCuencaDTOList = this.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
+        } catch (Exception e) {
+            Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
         }
         return historicoCuencaDTOList;
     }
@@ -263,4 +280,5 @@ public class EmbalseDAO {
         }
         return embalseDTOList;
     }
+
 }

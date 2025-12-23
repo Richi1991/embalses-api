@@ -1,5 +1,6 @@
 package com.app.controller;
 
+import com.app.constantes.Constants;
 import com.app.dto.EmbalseDTO;
 import com.app.dto.HistoricoCuencaDTO;
 import com.app.exceptions.Exceptions;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.app.service.EmbalseService;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,6 +26,13 @@ public class EmbalseController {
     @Value("${CRON_JOB_KEY}")
     private String cronKey;
 
+    /**
+     * Primero obtiene los ultimos datos de la web de la chs y los guarda en la tabla lecturas_embalses
+     * Después obtiene las Ultimas Lecturas Con Variacion Por Intervalo de fechas de la tabla lecturas_embalses
+     * @param intervalo
+     * @return
+     * @throws FunctionalExceptions
+     */
     @GetMapping("/top-movimientos")
     public List<EmbalseDTO> getTopMovimientos(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
         try {
@@ -33,7 +43,52 @@ public class EmbalseController {
             Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
         }
         // 2. Recupera el listado final con la variación real (calculada por SQL LAG)
-        return embalseService.obtenerListadoParaFront(intervalo);
+        return embalseService.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo);
+    }
+
+    /**
+     * Obtiene los datos de historico de cuenca del Segura
+     * Los muestra en la gráfica principal
+     * @return
+     * @throws FunctionalExceptions
+     */
+    @GetMapping("/historico-cuenca")
+    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSegura(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
+        List<HistoricoCuencaDTO> datos = new ArrayList<>();
+        if (intervalo.equals(Constants.UN_DIA)){
+            datos = embalseService.getHistoricoCuencaSeguraUltimoDia();
+        } else {
+            datos = embalseService.getHistoricoCuencaSegura();
+        }
+
+        return ResponseEntity.ok(datos);
+    }
+
+    /**
+     * Este método lo llamará un Cron-job 1 vez al día y
+     * guarda los datos en la tabla historico_cuenca_segura
+     * Se usa en el grafico principal del front
+     * SÍ hace scraping y guarda en la base de datos.
+     */
+    @PostMapping("/internal-refresh")
+    public ResponseEntity<String> getDataWebAndUpdateEveryDay(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
+        if (key == null || !key.equals(cronKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
+        }
+
+        embalseService.obtenerDatosWebAndUpdateEveryDay();
+        return ResponseEntity.ok("Datos actualizados en Neon");
+    }
+
+    /**
+     * Cada vez que abrimos el detalle de un embalse
+     * obtiene los datos de la tabla lecturas_embalses
+     * y muestra el grafico de la pantalla de cada embalse
+     */
+    @GetMapping("/obtener_historico_embalse{idEmbalse}")
+    public ResponseEntity<List<EmbalseDTO>> obtenerHistoricoEmbalsePorIdEmbalse(@PathVariable("idEmbalse") int idEmbalse) throws FunctionalExceptions {
+        List<EmbalseDTO> historicoEmbalseList = embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+        return ResponseEntity.ok(historicoEmbalseList);
     }
 
     /**
@@ -48,31 +103,6 @@ public class EmbalseController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error al despertar");
         }
-    }
-
-    @GetMapping("/historico-cuenca")
-    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuenca() throws FunctionalExceptions {
-        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuenca();
-        return ResponseEntity.ok(datos);
-    }
-
-    /**
-     * Este método lo llamará un Cron-job cada 3 horas.
-     * SÍ hace scraping y guarda en la base de datos.
-     */
-    @PostMapping("/internal-refresh")
-    public ResponseEntity<String> getDataWebAndUpdateEach3hours(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
-        if (key == null || !key.equals(cronKey)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
-        }
-
-        embalseService.obtenerDatosWebAndUpdateEach3hours();
-        return ResponseEntity.ok("Datos actualizados en Neon");
-    }
-    @GetMapping("/obtener_historico_embalse{idEmbalse}")
-    public ResponseEntity<List<EmbalseDTO>> obtenerHistoricoEmbalsePorIdEmbalse(@PathVariable("idEmbalse") int idEmbalse) throws FunctionalExceptions {
-        List<EmbalseDTO> historicoEmbalseList = embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
-        return ResponseEntity.ok(historicoEmbalseList);
     }
 
 }

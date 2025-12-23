@@ -12,4 +12,9 @@ public class FunctionalExceptions extends Exception {
     }
 
 
+    public FunctionalExceptions(String descripcionError) {
+        super(descripcionError);
+    }
+
+
 }
