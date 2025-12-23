@@ -73,6 +73,21 @@ public class EmbalseController {
     }
 
     /**
+     * Este método lo llamará un Cron-job 1 vez cada hora
+     * guarda los datos en la tabla historico_cuenca_segura_diario
+     * Se usa en el grafico principal del front
+     * SÍ hace scraping y guarda en la base de datos.
+     */
+    @PostMapping("/insertar-cuenca-segura-diario")
+    public ResponseEntity<String> getDataWebAndUpdateEveryHour(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
+        if (key == null || !key.equals(cronKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
+        }
+        embalseService.getHistoricoCuencaSeguraUltimoDia();
+        return ResponseEntity.ok("Datos historico_cuenca_segura_diario insertados en Neon");
+    }
+
+    /**
      * Este método lo llamará un Cron-job 1 vez al día y
      * guarda los datos en la tabla historico_cuenca_segura
      * Se usa en el grafico principal del front
