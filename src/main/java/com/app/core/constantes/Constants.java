@@ -1,4 +1,4 @@
-package com.app.constantes;
+package com.app.core.constantes;
 
 public class Constants {
 
@@ -8,6 +8,7 @@ public class Constants {
     public static final String EMB0004 = "EMB_E_0004";
     public static final String EMB0005 = "EMB_E_0005";
     public static final String EMB0006 = "EMB_E_0006";
+    public static final String EMB0007 = "EMB_E_0007";
 
     public static final String UN_DIA = "1 day";
 

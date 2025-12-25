@@ -1,17 +1,17 @@
-package com.app.dao;
+package com.app.modules.hidrology.dao;
 
-import com.app.constantes.Constants;
-import com.app.constantes.Tendencia;
-import com.app.dto.EmbalseDTO;
-import com.app.dto.HistoricoCuencaDTO;
-import com.app.exceptions.Exceptions;
-import com.app.exceptions.FunctionalExceptions;
+import com.app.core.config.DatabaseConfig;
+import com.app.core.constantes.Constants;
+import com.app.modules.hidrology.dto.TendenciaEnum;
+import com.app.modules.hidrology.dto.EmbalseDTO;
+import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
+import com.app.modules.hidrology.exceptions.Exceptions;
+import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -54,7 +54,7 @@ public class EmbalseDAO {
         return hm3Anterior;
     }
 
-    public void guardarLectura(Integer embalseId, double hm3, double porc, Double variacion, Tendencia tendencia) throws SQLException {
+    public void guardarLectura(Integer embalseId, double hm3, double porc, Double variacion, TendenciaEnum tendencia) throws SQLException {
 
         String sqlInsertaLectura = "INSERT INTO lecturas_embalses (embalse_id, hm3_actual, porcentaje, variacion, tendencia) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -110,7 +110,7 @@ public class EmbalseDAO {
                             rs.getDouble("porcentaje"),
                             rs.getDouble("capacidad_maxima"),
                             rs.getDouble("variacion_calculada"),
-                            Tendencia.ESTABLE, // La tendencia la calcularemos en el Front según la variación
+                            TendenciaEnum.ESTABLE, // La tendencia la calcularemos en el Front según la variación
                             rs.getTimestamp("fecha_registro")
                     ));
                 }
@@ -254,9 +254,9 @@ public class EmbalseDAO {
                     while (rs.next()) {
 
                         String tendenciaBD = rs.getString("tendencia");
-                        Tendencia tendencia = (tendenciaBD != null)
-                                ? Tendencia.valueOf(tendenciaBD.toUpperCase())
-                                : Tendencia.ESTABLE;
+                        TendenciaEnum tendencia = (tendenciaBD != null)
+                                ? TendenciaEnum.valueOf(tendenciaBD.toUpperCase())
+                                : TendenciaEnum.ESTABLE;
 
                         embalseDTOList.add(new EmbalseDTO(
                                 rs.getInt("embalse_id"),

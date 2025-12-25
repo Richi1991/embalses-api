@@ -1,4 +1,4 @@
-package com.app.exceptions;
+package com.app.modules.hidrology.exceptions;
 
 import javax.lang.model.type.ErrorType;
 import java.util.Map;

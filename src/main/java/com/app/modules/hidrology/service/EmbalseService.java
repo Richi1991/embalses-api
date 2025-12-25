@@ -1,13 +1,13 @@
-package com.app.service;
+package com.app.modules.hidrology.service;
 
-import com.app.constantes.Constants;
-import com.app.constantes.Tendencia;
-import com.app.dao.EmbalseDAO;
-import com.app.dto.EmbalseDTO;
-import com.app.dto.EmbalseEnum;
-import com.app.dto.HistoricoCuencaDTO;
-import com.app.exceptions.Exceptions;
-import com.app.exceptions.FunctionalExceptions;
+import com.app.core.constantes.Constants;
+import com.app.modules.hidrology.dto.TendenciaEnum;
+import com.app.modules.hidrology.dao.EmbalseDAO;
+import com.app.modules.hidrology.dto.EmbalseDTO;
+import com.app.modules.hidrology.dto.EmbalseEnum;
+import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
+import com.app.modules.hidrology.exceptions.Exceptions;
+import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
@@ -55,10 +55,10 @@ public class EmbalseService {
                     double hm3Anterior = embalseDAO.obtenerHm3AnteriorYActualizar(nombreEmbalseObtenido, hm3Actual);
                     double variacion = hm3Actual - hm3Anterior;
 
-                    Tendencia tendencia = switch (Double.compare(variacion, 0)) {
-                        case 1  -> Tendencia.SUBIDA;
-                        case -1 -> Tendencia.BAJADA;
-                        default -> Tendencia.ESTABLE;
+                    TendenciaEnum tendencia = switch (Double.compare(variacion, 0)) {
+                        case 1  -> TendenciaEnum.SUBIDA;
+                        case -1 -> TendenciaEnum.BAJADA;
+                        default -> TendenciaEnum.ESTABLE;
                     };
 
                     embalseDAO.guardarLectura(idEmbalse, hm3Actual, porc, variacion, tendencia);

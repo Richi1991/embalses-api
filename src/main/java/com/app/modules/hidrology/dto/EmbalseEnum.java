@@ -1,4 +1,4 @@
-package com.app.dto;
+package com.app.modules.hidrology.dto;
 
 public enum EmbalseEnum {
 

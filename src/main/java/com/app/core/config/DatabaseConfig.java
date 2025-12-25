@@ -1,4 +1,4 @@
-package com.app.dao;
+package com.app.core.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

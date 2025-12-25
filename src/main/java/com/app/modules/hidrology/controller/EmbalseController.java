@@ -1,18 +1,16 @@
-package com.app.controller;
+package com.app.modules.hidrology.controller;
 
-import com.app.constantes.Constants;
-import com.app.dto.EmbalseDTO;
-import com.app.dto.HistoricoCuencaDTO;
-import com.app.exceptions.Exceptions;
-import com.app.exceptions.FunctionalExceptions;
+import com.app.modules.hidrology.dto.EmbalseDTO;
+import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
+import com.app.modules.hidrology.exceptions.Exceptions;
+import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.app.service.EmbalseService;
+import com.app.modules.hidrology.service.EmbalseService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController

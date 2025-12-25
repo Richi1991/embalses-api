@@ -1,6 +1,4 @@
-package com.app.dto;
-
-import com.app.constantes.Tendencia;
+package com.app.modules.hidrology.dto;
 
 import java.sql.Timestamp;
 
@@ -11,7 +9,7 @@ public record EmbalseDTO(
         double porcentaje,
         double capacidadMaximaEmbalse,
         double variacion, // Este será el % de cambio
-        Tendencia tendencia,
+        TendenciaEnum tendencia,
         Timestamp fechaRegistro// "subida", "bajada" o "estable"
 ) {}
 

@@ -1,12 +1,12 @@
-package com.app.constantes;
+package com.app.modules.hidrology.dto;
 
 // En tu Enum
-public enum Tendencia {
+public enum TendenciaEnum {
     SUBIDA("subida"),
     BAJADA("bajada"),
     ESTABLE("estable");
 
     private final String valor;
-    Tendencia(String valor) { this.valor = valor; }
+    TendenciaEnum(String valor) { this.valor = valor; }
     public String getValor() { return valor; }
 }
