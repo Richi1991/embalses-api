@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.regex.Pattern;
 public class EmbalseService {
 
     public EmbalseService() throws NoSuchAlgorithmException, KeyManagementException {
-        configureSSL();
+        this.configureSSL();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(EmbalseService.class);
@@ -120,7 +121,17 @@ public class EmbalseService {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA);
     }
 
-    private void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
+
+
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
+        return embalseDAO.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+    }
+
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
+        return embalseDAO.getHistoricoCuencaSeguraUltimoDia();
+    }
+
+    public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
         javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
                 new javax.net.ssl.X509TrustManager() {
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
@@ -134,11 +145,4 @@ public class EmbalseService {
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
-    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
-        return embalseDAO.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
-    }
-
-    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
-        return embalseDAO.getHistoricoCuencaSeguraUltimoDia();
-    }
 }

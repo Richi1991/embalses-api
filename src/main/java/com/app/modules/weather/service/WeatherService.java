@@ -3,7 +3,7 @@ package com.app.modules.weather.service;
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dao.WeatherDAO;
-import com.app.modules.weather.dto.EstacionesAemetDTO;
+import com.app.modules.weather.dto.EstacionesDTO;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,7 +13,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -22,9 +22,9 @@ public class WeatherService {
     @Autowired
     private WeatherDAO weatherDAO;
 
-    public void insertarEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws IOException, FunctionalExceptions {
+    public void insertarEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions, SQLException {
         OkHttpClient client = new OkHttpClient();
-
+        List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia;
         String newUrl = null;
         try {
             Request request = new Request.Builder()
@@ -50,23 +50,28 @@ public class WeatherService {
                                 String jsonDataEstaciones = responseEstaciones.body().string();
 
                                 ObjectMapper mapper = new ObjectMapper();
-                                List<EstacionesAemetDTO> estacionesAemetDTOListFilterByProvincia = mapper.readValue(jsonDataEstaciones, new TypeReference<List<EstacionesAemetDTO>>() {
+                                estacionesAemetDTOListFilterByProvincia = mapper.readValue(jsonDataEstaciones, new TypeReference<List<EstacionesDTO>>() {
                                         })
                                         .stream()
                                         .filter(e -> e.getProvincia().equalsIgnoreCase(provincia))
                                         .toList();
 
-                                weatherDAO.insertarEstacionesAemetFilterByProvincia(provincia, estacionesAemetDTOListFilterByProvincia);
+                                weatherDAO.insertarEstacionesAemetFilterByProvincia(estacionesAemetDTOListFilterByProvincia);
                             }
                         }
                     }
                 }
             }
-
         } catch (Exception e) {
             Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
         }
-
     }
+
+    public void insertarEstacionesChs() {
+    }
+
+   /* private void buscarEstacionesPorProvincia(String provincia, String apiKeyAemet, OkHttpClient client) throws FunctionalExceptions {
+        List<EstacionesAemetDTO> estacionesAemetDTOListFilterByProvincia = weatherDAO.buscarEstacionesPorProvincia(provincia);
+    }*/
 
 }
