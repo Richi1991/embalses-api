@@ -21,4 +21,9 @@ public class PrecipitacionesController {
     public void extraerPrecipitacionesRealTime() throws FunctionalExceptions {
         precipitacionesService.extraerPrecipitacionesRealTime();
     }
+
+    @GetMapping("/obtener-coordenadas")
+    public void obtenerCoordenadas(){
+
+    }
 }

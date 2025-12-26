@@ -9,6 +9,7 @@ public class EstacionesDTO {
     private String nombre;
     private String indsinop;
     private String longitud;
+    private String redOrigen;
     private Double precipitacion1h;
     private Double precipitacion3h;
     private Double precipitacion6h;
@@ -124,5 +125,13 @@ public class EstacionesDTO {
 
     public void setPrecipitacion24h(Double precipitacion24h) {
         this.precipitacion24h = precipitacion24h;
+    }
+
+    public String getRedOrigen() {
+        return redOrigen;
+    }
+
+    public void setRedOrigen(String redOrigen) {
+        this.redOrigen = redOrigen;
     }
 }
