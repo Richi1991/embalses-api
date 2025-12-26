@@ -2,12 +2,16 @@ package com.app.modules.weather.controller;
 
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
+import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -29,19 +33,15 @@ public class WeatherController {
         }
     }
 
-    @GetMapping("/insertar-estaciones-chs")
-    public void insertarEstacionesChsPorProvincia() throws FunctionalExceptions {
+    @GetMapping("/obtener_estaciones")
+    public ResponseEntity<List<EstacionesDTO>> obtenerEstaciones() throws FunctionalExceptions {
+        List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
         try {
-            weatherService.insertarEstacionesChs();
+            estacionesDTOList = weatherService.obtenerEstaciones();
         } catch(Exception e) {
-            Exceptions.EMB_E_0007.lanzarExcepcionCausada(e);
+            Exceptions.EMB_E_0008.lanzarExcepcionCausada(e);
         }
+        return ResponseEntity.ok(estacionesDTOList);
     }
 
-    @PostMapping("/guardar-datos-estacion/{fechaInicio}/{fechaFin}/{provincia}")
-    public void guardarDatosEstacionByFecha(@PathVariable(value= "fechaInicio") OffsetDateTime fechaInicio, @PathVariable(value = "fechaFin") OffsetDateTime fechaFin, @PathVariable (value ="indicativo") String provincia) {
-
-    }
-
-    //@GetMapping("/get-datos-estaciones/{provincia}")
 }

@@ -10,7 +10,8 @@ public enum Exceptions {
     EMB_E_0004(Constants.EMB0004, "Ocurrió un error al conectar con la base de datos"),
     EMB_E_0005(Constants.EMB0005, "Ocurrió un error al cargar los datos históricos diarios en la base de datos"),
     EMB_E_0006(Constants.EMB0006, "No existe el embalse %s"),
-    EMB_E_0007(Constants.EMB0007, "Ha habido un error insertando las estaciones de la Aemet en BD");
+    EMB_E_0007(Constants.EMB0007, "Ha habido un error insertando las estaciones de la Aemet en BD"),
+    EMB_E_0008(Constants.EMB0008, "Ha habido un error obteniendo las estaciones meteorologicas");
 
     private String codigoError;
     private String descripcionError;

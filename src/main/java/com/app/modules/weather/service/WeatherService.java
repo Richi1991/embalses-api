@@ -14,6 +14,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -67,11 +68,8 @@ public class WeatherService {
         }
     }
 
-    public void insertarEstacionesChs() {
+    public List<EstacionesDTO> obtenerEstaciones() throws FunctionalExceptions {
+        return weatherDAO.obtenerEstacionesMeteorologicas();
     }
-
-   /* private void buscarEstacionesPorProvincia(String provincia, String apiKeyAemet, OkHttpClient client) throws FunctionalExceptions {
-        List<EstacionesAemetDTO> estacionesAemetDTOListFilterByProvincia = weatherDAO.buscarEstacionesPorProvincia(provincia);
-    }*/
 
 }

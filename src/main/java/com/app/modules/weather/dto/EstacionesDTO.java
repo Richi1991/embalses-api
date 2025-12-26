@@ -20,7 +20,7 @@ public class EstacionesDTO {
     public EstacionesDTO() {
     }
 
-    public EstacionesDTO(String latitud, String provincia, long altitud, String indicativo, String nombre, String indsinop, String longitud) {
+    public EstacionesDTO(String latitud, String provincia, long altitud, String indicativo, String nombre, String indsinop, String longitud, String redOrigen) {
     }
 
     public String getLatitud() {

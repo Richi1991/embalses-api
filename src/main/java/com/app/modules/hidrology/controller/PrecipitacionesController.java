@@ -22,8 +22,4 @@ public class PrecipitacionesController {
         precipitacionesService.extraerPrecipitacionesRealTime();
     }
 
-    @GetMapping("/obtener-coordenadas")
-    public void obtenerCoordenadas(){
-
-    }
 }

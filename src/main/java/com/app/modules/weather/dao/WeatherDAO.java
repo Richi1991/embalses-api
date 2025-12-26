@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class WeatherDAO {
         while (intentos < 3 && !exito) {
             try (Connection conn = DatabaseConfig.getConnection()) {
                 try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertarEstacionesFilteredByProvincia)) {
+                    exito = true;
                     for (EstacionesDTO estacionesAemetDTO : estacionesAemetDTOListFilterByProvincia) {
                         psLectura.setString(1, estacionesAemetDTO.getLatitud());
                         psLectura.setString(2, estacionesAemetDTO.getProvincia());
@@ -49,49 +51,63 @@ public class WeatherDAO {
         }
     }
 
-    public List<EstacionesDTO> buscarEstacionesPorProvincia(String provincia) throws FunctionalExceptions {
-
-        int intentos = 0;
-        boolean exito = false;
-
-        List<EstacionesDTO> estacionesAemetDTOList = new ArrayList<>();
-
-        String sqlSelectEstacionesByProvincia = "SELECT * FROM estaciones_aemet WHERE provincia =" + provincia;
-
-        while (intentos < 3 && !exito) {
-            try (Connection conn = DatabaseConfig.getConnection()) {
-                try (PreparedStatement psLectura = conn.prepareStatement(sqlSelectEstacionesByProvincia)) {
-                    psLectura.setString(2, provincia);
-                    try (ResultSet rs = psLectura.executeQuery()) {
-                        while (rs.next()) {
-                            estacionesAemetDTOList.add(new EstacionesDTO(
-                                    rs.getString("latitud"),
-                                    rs.getString("provincia"),
-                                    rs.getLong("altitud"),
-                                    rs.getString("indicativo"),
-                                    rs.getString("nombre"),
-                                    rs.getString("indsinop"),
-                                    rs.getString("longitud")
-                            ));
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                intentos++;
-                if (intentos >= 3) {
-                    Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
-                }
-                manejarEspera(4000L);
-            }
-        }
-        return estacionesAemetDTOList;
-    }
-
     public void manejarEspera(Long time) {
         try {
             Thread.sleep(time); // Espera X segundos antes de reintentar
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    public List<EstacionesDTO> obtenerEstacionesMeteorologicas() throws FunctionalExceptions {
+        int intentos = 0;
+        boolean exito = false;
+        List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
+
+        // 1. Usar un alias en SQL si los nombres de columna en Java difieren (opcional)
+        String sqlSelect = "SELECT latitud, provincia, altitud, indicativo, nombre, indsinop, longitud, red_origen FROM estaciones_meteorologicas";
+
+        while (intentos < 3 && !exito) {
+            try (Connection conn = DatabaseConfig.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlSelect)) {
+
+                // 2. Optimización de lectura para PostgreSQL
+                ps.setFetchSize(100);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        estacionesDTOList.add(mapResultSetToDTO(rs));
+                    }
+                    exito = true; // Marcamos éxito para salir del bucle while
+                }
+
+            } catch (SQLException e) {
+                intentos++;
+                // Si es un error de autenticación o red, reintentamos
+                if (intentos >= 3) {
+                    Exceptions.EMB_E_0008.lanzarExcepcionCausada(e);
+                }
+                System.err.println("Intento " + intentos + " fallido. Reintentando...");
+                manejarEspera(2000L); // Reducimos el tiempo de espera a 2s para mayor agilidad
+            } catch (Exception e) {
+                // Errores no relacionados con la DB (como NullPointer) no deberían reintentarse
+                Exceptions.EMB_E_0008.lanzarExcepcionCausada(e);
+                break;
+            }
+        }
+        return estacionesDTOList;
+    }
+
+    private EstacionesDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
+        EstacionesDTO dto = new EstacionesDTO();
+        dto.setLatitud(rs.getString("latitud"));
+        dto.setProvincia(rs.getString("provincia"));
+        dto.setAltitud(rs.getLong("altitud"));
+        dto.setIndicativo(rs.getString("indicativo"));
+        dto.setNombre(rs.getString("nombre"));
+        dto.setIndsinop(rs.getString("indsinop"));
+        dto.setLongitud(rs.getString("longitud"));
+        dto.setRedOrigen(rs.getString("red_origen"));
+        return dto;
     }
 }
