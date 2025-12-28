@@ -1,39 +1,34 @@
-# 1️⃣ Imagen base con JDK 17
-FROM eclipse-temurin:17-jdk-alpine
+FROM maven:3.8.5-openjdk-17 AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-# 2️⃣ Instalar dependencias para Chromium y Selenium
-RUN apk add --no-cache \
-    chromium \
-    chromium-chromedriver \
-    bash \
+FROM openjdk:17-jdk-slim
+# Instalar dependencias para Chrome
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    unzip \
     curl \
-    ttf-freefont \
-    nss \
-    freetype \
-    harfbuzz \
+    libgconf-2-4 \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
     ca-certificates \
-    fontconfig \
-    && update-ca-certificates
+    fonts-liberation \
+    libappindicator3-1 \
+    lsb-release \
+    xdg-utils \
+    --no-install-recommends \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 
-# 3️⃣ Variables de entorno para Selenium
-ENV CHROME_BIN=/usr/bin/chromium-browser
-ENV PATH=$PATH:/usr/bin
+# CORRECCIÓN AQUÍ: Añadido "app.jar" al final para que coincida con el ENTRYPOINT
+COPY --from=build /target/embalseschs-0.0.1-SNAPSHOT.jar app.jar
 
-# 4️⃣ Crear directorio de la app
-WORKDIR /app
-
-# 5️⃣ Copiar pom.xml y código fuente
-COPY pom.xml .
-COPY src ./src
-COPY mvnw .
-COPY .mvn .mvn
-
-# 6️⃣ Construir el proyecto con Maven
-RUN chmod +x mvnw && ./mvnw clean package -DskipTests
-
-# 7️⃣ Exponer puerto
-ENV PORT=8080
 EXPOSE 8080
-
-# 8️⃣ Comando para arrancar la app
-ENTRYPOINT ["java", "-jar", "target/embalseschs-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

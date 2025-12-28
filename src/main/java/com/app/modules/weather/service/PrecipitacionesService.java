@@ -170,17 +170,25 @@ public class PrecipitacionesService {
     }
 
     public WebDriver createDriver() {
+        // WebDriverManager se encargará de bajar el driver compatible con la versión de Chrome instalada por Docker
         WebDriverManager.chromedriver().setup();
+
         ChromeOptions options = new ChromeOptions();
+
+        // Forzamos la ruta del binario de Chrome instalado en el contenedor
+        String chromeBin = System.getenv("CHROME_BIN");
+        if (chromeBin != null) {
+            options.setBinary(chromeBin);
+        }
+
         options.addArguments("--headless");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
+        options.addArguments("--remote-allow-origins=*");
 
-        WebDriver driver = new ChromeDriver(options);
-        return driver;
+        return new ChromeDriver(options);
     }
-
-
 
 }
