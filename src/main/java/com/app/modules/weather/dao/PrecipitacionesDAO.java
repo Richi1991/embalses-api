@@ -89,20 +89,21 @@ public class PrecipitacionesDAO {
 
         List<EstacionesDTO> estacionesAndPrecipitacionesDtoList = new ArrayList<>();
 
-        String sqlGetPrecipitaciones = " SELECT DISTINCT ON (pre.indicativo) \n " +
-                "  pre.indicativo, \n " +
+        String sqlGetPrecipitaciones = " SELECT DISTINCT ON (pre.indicativo)\n " +
+                "  pre.indicativo,\n " +
                 "  pre.nombre,\n " +
-                "  pre.fecha_actualizacion, \n " +
-                "  pre.precipitacion_1h, \n " +
-                "  pre.precipitacion_3h, \n " +
+                "  pre.fecha_actualizacion,\n " +
+                "  pre.precipitacion_1h,\n " +
+                "  pre.precipitacion_3h,\n " +
                 "  pre.precipitacion_6h,\n " +
                 "  pre.precipitacion_12h,\n " +
                 "  pre.precipitacion_24h,\n " +
                 "  est.latitud,\n " +
                 "  est.longitud,\n " +
                 "  est.geom\n " +
-                " FROM precipitaciones pre, estaciones_meteorologicas est\n " +
-                " ORDER BY indicativo, fecha_actualizacion DESC; " ;
+                " FROM precipitaciones pre\n " +
+                " INNER JOIN estaciones_meteorologicas est ON pre.indicativo = est.indicativo\n " +
+                " ORDER BY pre.indicativo, pre.fecha_actualizacion DESC; " ;
 
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sqlGetPrecipitaciones)) {
