@@ -187,17 +187,15 @@ public class PrecipitacionesService {
     }
 
     private WebDriver createDriver() {
-        WebDriverManager.chromedriver().setup();
-
         ChromeOptions options = new ChromeOptions();
+        options.setBinary(System.getenv().getOrDefault("CHROME_BIN", "/usr/bin/chromium-browser"));
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
 
-        // 🔥 CLAVE PARA RENDER
-        options.setBinary("/usr/bin/chromium");
+        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
 
         return new ChromeDriver(options);
     }
