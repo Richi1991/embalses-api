@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class WeatherDAO {
+public class EstacionesDAO {
 
     public void insertarEstacionesAemetFilterByProvincia(List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia) throws FunctionalExceptions {
 

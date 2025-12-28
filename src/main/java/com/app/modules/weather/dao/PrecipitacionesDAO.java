@@ -2,8 +2,6 @@ package com.app.modules.weather.dao;
 
 import com.app.core.config.DatabaseConfig;
 import com.app.core.constantes.Constants;
-import com.app.modules.hidrology.dto.EmbalseDTO;
-import com.app.modules.hidrology.dto.TendenciaEnum;
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dto.EstacionesDTO;

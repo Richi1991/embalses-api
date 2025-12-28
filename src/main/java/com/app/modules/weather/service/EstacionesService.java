@@ -2,7 +2,7 @@ package com.app.modules.weather.service;
 
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
-import com.app.modules.weather.dao.WeatherDAO;
+import com.app.modules.weather.dao.EstacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,14 +14,13 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class WeatherService {
+public class EstacionesService {
 
     @Autowired
-    private WeatherDAO weatherDAO;
+    private EstacionesDAO weatherDAO;
 
     public void insertarEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions, SQLException {
         OkHttpClient client = new OkHttpClient();

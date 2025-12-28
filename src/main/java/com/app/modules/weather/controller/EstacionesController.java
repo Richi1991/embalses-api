@@ -3,7 +3,7 @@ package com.app.modules.weather.controller;
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dto.EstacionesDTO;
-import com.app.modules.weather.service.WeatherService;
+import com.app.modules.weather.service.EstacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/weather")
+@RequestMapping("/api/weather/estaciones")
 @CrossOrigin(origins = "*", allowedHeaders = "*") // El asterisco da permiso total para pruebas
-public class WeatherController {
+public class EstacionesController {
 
     @Autowired
-    private WeatherService weatherService;
+    private EstacionesService weatherService;
 
     @Value("${API_KEY_AEMET}")
     private String apiKeyAemet;

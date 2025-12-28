@@ -1,8 +1,8 @@
-package com.app.modules.hidrology.controller;
+package com.app.modules.weather.controller;
 
 import com.app.modules.hidrology.exceptions.Exceptions;
 import com.app.modules.hidrology.exceptions.FunctionalExceptions;
-import com.app.modules.hidrology.service.PrecipitacionesService;
+import com.app.modules.weather.service.PrecipitacionesService;
 import com.app.modules.weather.dto.EstacionesDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/embalses/precipitaciones")
+@RequestMapping("/api/weather/precipitaciones")
 @CrossOrigin(origins = "*", allowedHeaders = "*") // El asterisco da permiso total para pruebas
 public class PrecipitacionesController {
 

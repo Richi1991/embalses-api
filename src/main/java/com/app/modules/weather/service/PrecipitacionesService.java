@@ -1,4 +1,4 @@
-package com.app.modules.hidrology.service;
+package com.app.modules.weather.service;
 
 import com.app.core.constantes.Constants;
 import com.app.modules.weather.dao.PrecipitacionesDAO;
