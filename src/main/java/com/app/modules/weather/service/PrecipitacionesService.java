@@ -5,6 +5,10 @@ import com.app.modules.weather.dao.PrecipitacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -26,74 +30,6 @@ public class PrecipitacionesService {
     @Autowired
     private PrecipitacionesDAO precipitacionesDAO;
 
-    public void insertarEstaciones() {
-        WebDriver driver = createDriver();
-
-        try {
-            System.out.println("--- Iniciando captura de Precipitaciones CHSegura ---");
-            driver.get("https://www.chsegura.es/es/cuenca/redes-de-control/saih/informe-horario-de-precipitaciones/");
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tablaVisorPrecipitaciones")));
-
-            try {
-                System.out.println("Enviando comando JS para expandir tabla...");
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
-
-                js.executeScript(
-                        "var table = $('#tablaVisorPrecipitaciones').DataTable();" +
-                                "table.page.len(500).draw();"
-                );
-
-                wait.until(d -> d.findElements(By.cssSelector("#tablaVisorPrecipitaciones tbody tr")).size() > 25);
-
-                System.out.println("Tabla expandida exitosamente mediante JS.");
-            } catch (Exception e) {
-                System.out.println("Error al expandir con JS: " + e.getMessage());
-                // Fallback: Intentar al menos el clic físico si el JS falla
-                try {
-                    WebElement lengthMenu = driver.findElement(By.name("tablaVisorPrecipitaciones_length"));
-                    new Select(lengthMenu).selectByValue("100");
-                    Thread.sleep(5000);
-                } catch (Exception ex) {
-                    System.out.println("No se pudo expandir de ninguna forma.");
-                }
-            }
-
-            // 3. Localizar todas las filas renderizadas
-            List<WebElement> filas = driver.findElements(By.cssSelector("#tablaVisorPrecipitaciones tbody tr"));
-
-            List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
-
-            for (WebElement fila : filas) {
-                List<WebElement> celdas = fila.findElements(By.tagName("td"));
-
-                // Verificamos que la fila tenga al menos 8 columnas para evitar errores
-                if (celdas.size() >= 8) {
-                    String denominacion = celdas.get(0).getText().trim();
-                    String punto = celdas.get(1).getText().trim();
-
-                    if (!punto.isEmpty() && !punto.equalsIgnoreCase("No data available in table")) {
-
-                        EstacionesDTO estacionesDTO = new EstacionesDTO();
-                        estacionesDTO.setNombre(denominacion);
-                        estacionesDTO.setIndicativo(punto);
-                        estacionesDTO.setRedOrigen(Constants.CHS);
-                        estacionesDTOList.add(estacionesDTO);
-                    }
-                }
-            }
-            precipitacionesDAO.insertarEstacionesChs(estacionesDTOList);
-        } catch (Exception e) {
-            System.err.println("Error crítico: " + e.getMessage());
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
-        }
-    }
-
     public void getAndSavePrecipitacionesRealTime() {
         WebDriver driver = createDriver();
 
@@ -102,13 +38,11 @@ public class PrecipitacionesService {
             driver.get("https://www.chsegura.es/es/cuenca/redes-de-control/saih/informe-horario-de-precipitaciones/");
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-
             wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tablaVisorPrecipitaciones")));
 
             try {
                 System.out.println("Enviando comando JS para expandir tabla...");
                 org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
-
                 js.executeScript(
                         "var table = $('#tablaVisorPrecipitaciones').DataTable();" +
                                 "table.page.len(500).draw();"
@@ -119,7 +53,6 @@ public class PrecipitacionesService {
                 System.out.println("Tabla expandida exitosamente mediante JS.");
             } catch (Exception e) {
                 System.out.println("Error al expandir con JS: " + e.getMessage());
-                // Fallback: Intentar al menos el clic físico si el JS falla
                 try {
                     WebElement lengthMenu = driver.findElement(By.name("tablaVisorPrecipitaciones_length"));
                     new Select(lengthMenu).selectByValue("100");
@@ -129,21 +62,21 @@ public class PrecipitacionesService {
                 }
             }
 
-            // 3. Localizar todas las filas renderizadas
+            // Localizar todas las filas
             List<WebElement> filas = driver.findElements(By.cssSelector("#tablaVisorPrecipitaciones tbody tr"));
 
-            List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
+            int batchSize = 20; // Ajusta según memoria
+            List<EstacionesDTO> batch = new ArrayList<>();
 
-            for (WebElement fila : filas) {
+            for (int i = 0; i < filas.size(); i++) {
+                WebElement fila = filas.get(i);
                 List<WebElement> celdas = fila.findElements(By.tagName("td"));
 
-                // Verificamos que la fila tenga al menos 8 columnas para evitar errores
                 if (celdas.size() >= 8) {
                     String denominacion = celdas.get(0).getText().trim();
                     String punto = celdas.get(1).getText().trim();
 
                     if (!punto.isEmpty() && !punto.equalsIgnoreCase("No data available in table")) {
-
                         PrecipitacionesDTO precipitacionesDTO = new PrecipitacionesDTO();
 
                         EstacionesDTO estacionesDTO = new EstacionesDTO();
@@ -157,18 +90,68 @@ public class PrecipitacionesService {
                         precipitacionesDTO.setPrecipitacion24h(limpiarValor(celdas.get(7).getText().trim()));
 
                         estacionesDTO.setPrecipitacionesDTO(precipitacionesDTO);
+                        batch.add(estacionesDTO);
+                    }
+                }
+
+                // Guardar batch si alcanza el tamaño o es la última fila
+                if (batch.size() == batchSize || i == filas.size() - 1) {
+                    precipitacionesDAO.guardarValoresPrecipitaciones(batch);
+                    batch.clear(); // liberar memoria
+                }
+            }
+
+            System.out.println("Extracción de precipitaciones completada. Total filas procesadas: " + filas.size());
+
+        } catch (Exception e) {
+            System.err.println("Error crítico: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (driver != null) {
+                driver.quit();
+            }
+        }
+    }
+
+
+    public void insertarEstaciones() {
+        try {
+            System.out.println("--- Iniciando captura de estaciones CHSegura con Jsoup ---");
+
+            // 1️⃣ Conectarse a la página y parsear HTML
+            Document doc = Jsoup.connect("https://www.chsegura.es/es/cuenca/redes-de-control/saih/informe-horario-de-precipitaciones/")
+                    .timeout(30000) // 30 segundos timeout
+                    .get();
+
+            // 2️⃣ Seleccionar todas las filas de la tabla
+            Elements filas = doc.select("#tablaVisorPrecipitaciones tbody tr");
+
+            List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
+
+            for (Element fila : filas) {
+                Elements celdas = fila.select("td");
+
+                if (celdas.size() >= 8) {
+                    String denominacion = celdas.get(0).text().trim();
+                    String punto = celdas.get(1).text().trim();
+
+                    if (!punto.isEmpty() && !punto.equalsIgnoreCase("No data available in table")) {
+                        EstacionesDTO estacionesDTO = new EstacionesDTO();
+                        estacionesDTO.setNombre(denominacion);
+                        estacionesDTO.setIndicativo(punto);
+                        estacionesDTO.setRedOrigen(Constants.CHS);
                         estacionesDTOList.add(estacionesDTO);
                     }
                 }
             }
 
-            precipitacionesDAO.guardarValoresPrecipitaciones(estacionesDTOList);
+            // 3️⃣ Insertar en base de datos
+            precipitacionesDAO.insertarEstacionesChs(estacionesDTOList);
+            System.out.println("Extracción de estaciones completada. Filas procesadas: " + estacionesDTOList.size());
+
         } catch (Exception e) {
-            System.err.println("Error crítico: " + e.getMessage());
-        } finally {
-            if (driver != null) {
-                driver.quit();
-            }
+            System.err.println("Error crítico al insertar estaciones: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -186,19 +169,18 @@ public class PrecipitacionesService {
         return precipitacionesDAO.getPrecipitacionesRealTime();
     }
 
-    private WebDriver createDriver() {
+    public WebDriver createDriver() {
+        WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.setBinary(System.getenv().getOrDefault("CHROME_BIN", "/usr/bin/chromium-browser"));
-        options.addArguments("--headless=new");
+        options.addArguments("--headless");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
 
-        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
-
-        return new ChromeDriver(options);
+        WebDriver driver = new ChromeDriver(options);
+        return driver;
     }
+
 
 
 }
