@@ -108,50 +108,9 @@ public class PrecipitacionesService {
             e.printStackTrace();
         } finally {
             if (driver != null) {
+                System.out.println("Cerrando el navegador y liberando recursos...");
                 driver.quit();
             }
-        }
-    }
-
-
-    public void insertarEstaciones() {
-        try {
-            System.out.println("--- Iniciando captura de estaciones CHSegura con Jsoup ---");
-
-            // 1️⃣ Conectarse a la página y parsear HTML
-            Document doc = Jsoup.connect("https://www.chsegura.es/es/cuenca/redes-de-control/saih/informe-horario-de-precipitaciones/")
-                    .timeout(30000) // 30 segundos timeout
-                    .get();
-
-            // 2️⃣ Seleccionar todas las filas de la tabla
-            Elements filas = doc.select("#tablaVisorPrecipitaciones tbody tr");
-
-            List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
-
-            for (Element fila : filas) {
-                Elements celdas = fila.select("td");
-
-                if (celdas.size() >= 8) {
-                    String denominacion = celdas.get(0).text().trim();
-                    String punto = celdas.get(1).text().trim();
-
-                    if (!punto.isEmpty() && !punto.equalsIgnoreCase("No data available in table")) {
-                        EstacionesDTO estacionesDTO = new EstacionesDTO();
-                        estacionesDTO.setNombre(denominacion);
-                        estacionesDTO.setIndicativo(punto);
-                        estacionesDTO.setRedOrigen(Constants.CHS);
-                        estacionesDTOList.add(estacionesDTO);
-                    }
-                }
-            }
-
-            // 3️⃣ Insertar en base de datos
-            precipitacionesDAO.insertarEstacionesChs(estacionesDTOList);
-            System.out.println("Extracción de estaciones completada. Filas procesadas: " + estacionesDTOList.size());
-
-        } catch (Exception e) {
-            System.err.println("Error crítico al insertar estaciones: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
