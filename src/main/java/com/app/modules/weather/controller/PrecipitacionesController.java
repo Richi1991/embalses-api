@@ -29,7 +29,7 @@ public class PrecipitacionesController {
         precipitacionesService.insertarEstaciones();
     }
 
-    @GetMapping("/insert_precipitaciones_last_value")
+    @PostMapping("/insert_precipitaciones_last_value")
     public ResponseEntity<String> extraerAndGuardarPrecipitacionesRealTime(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
         if (key == null || !key.equals(cronKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");

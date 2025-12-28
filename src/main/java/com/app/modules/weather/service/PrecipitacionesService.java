@@ -16,6 +16,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,10 @@ public class PrecipitacionesService {
 
     @Autowired
     private PrecipitacionesDAO precipitacionesDAO;
+
+    public PrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
+        this.configureSSL();
+    }
 
     public void insertarEstaciones() {
         WebDriverManager.chromedriver().setup();
@@ -198,5 +204,19 @@ public class PrecipitacionesService {
 
     public List<EstacionesDTO> extraerPrecipitacionesRealTime() {
         return precipitacionesDAO.getPrecipitacionesRealTime();
+    }
+
+    public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
+        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
+                new javax.net.ssl.X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
+                }
+        };
+
+        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 }
