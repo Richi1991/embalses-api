@@ -5,10 +5,10 @@ import com.app.modules.hidrology.exceptions.FunctionalExceptions;
 import com.app.modules.weather.service.PrecipitacionesService;
 import com.app.modules.weather.dto.EstacionesDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,8 @@ public class PrecipitacionesController {
     @Autowired
     private PrecipitacionesService precipitacionesService;
 
+    @Value("${CRON_JOB_KEY}")
+    private String cronKey;
 
     @GetMapping("/insertar_estaciones")
     public void insertarEstaciones() throws FunctionalExceptions {
@@ -28,8 +30,14 @@ public class PrecipitacionesController {
     }
 
     @GetMapping("/insert_precipitaciones_last_value")
-    public void extraerAndGuardarPrecipitacionesRealTime() throws FunctionalExceptions {
+    public ResponseEntity<String> extraerAndGuardarPrecipitacionesRealTime(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
+        if (key == null || !key.equals(cronKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
+        }
+
         precipitacionesService.getAndSavePrecipitacionesRealTime();
+
+        return ResponseEntity.ok("Datos historico_cuenca_segura_diario insertados en Neon");
     }
 
     @GetMapping("/get_precipitaciones_last_value")
