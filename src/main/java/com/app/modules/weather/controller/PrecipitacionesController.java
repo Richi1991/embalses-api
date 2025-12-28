@@ -29,15 +29,9 @@ public class PrecipitacionesController {
         precipitacionesService.insertarEstaciones();
     }
 
-    @PostMapping("/insert_precipitaciones_last_value")
-    public ResponseEntity<String> extraerAndGuardarPrecipitacionesRealTime(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
-        if (key == null || !key.equals(cronKey)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
-        }
-
+    @GetMapping("/insert_precipitaciones_last_value")
+    public void extraerAndGuardarPrecipitacionesRealTime() throws FunctionalExceptions {
         precipitacionesService.getAndSavePrecipitacionesRealTime();
-
-        return ResponseEntity.ok("Insert Precipitaciones Last Value OK");
     }
 
     @GetMapping("/get_precipitaciones_last_value")

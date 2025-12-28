@@ -28,10 +28,6 @@ public class PrecipitacionesService {
     @Autowired
     private PrecipitacionesDAO precipitacionesDAO;
 
-    public PrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
-        this.configureSSL();
-    }
-
     public void insertarEstaciones() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
@@ -113,6 +109,8 @@ public class PrecipitacionesService {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36");
 
         WebDriver driver = new ChromeDriver(options);
 
@@ -205,17 +203,4 @@ public class PrecipitacionesService {
         return precipitacionesDAO.getPrecipitacionesRealTime();
     }
 
-    public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
-        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
-                }
-        };
-
-        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
-        sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-    }
 }
