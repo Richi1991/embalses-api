@@ -65,7 +65,7 @@ public class WeatherDAO {
         List<EstacionesDTO> estacionesDTOList = new ArrayList<>();
 
         // 1. Usar un alias en SQL si los nombres de columna en Java difieren (opcional)
-        String sqlSelect = "SELECT latitud, provincia, altitud, indicativo, nombre, indsinop, longitud, red_origen FROM estaciones_meteorologicas";
+        String sqlSelect = "SELECT latitud, provincia, altitud, indicativo, nombre, indsinop, longitud, red_origen, geom FROM estaciones_meteorologicas";
 
         while (intentos < 3 && !exito) {
             try (Connection conn = DatabaseConfig.getConnection();

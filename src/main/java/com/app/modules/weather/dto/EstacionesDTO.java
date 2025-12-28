@@ -1,5 +1,7 @@
 package com.app.modules.weather.dto;
 
+import java.sql.Timestamp;
+
 public class EstacionesDTO {
 
     private String latitud;
@@ -10,12 +12,9 @@ public class EstacionesDTO {
     private String indsinop;
     private String longitud;
     private String redOrigen;
-    private Double precipitacion1h;
-    private Double precipitacion3h;
-    private Double precipitacion6h;
-    private Double precipitacion12h;
-    private Double precipitacion24h;
-    private Double precipitacionAcumuladaAñoHidrologico;
+    private String geom;
+    private Timestamp fechaActualizacion;
+    private PrecipitacionesDTO precipitacionesDTO;
 
     public EstacionesDTO() {
     }
@@ -79,59 +78,35 @@ public class EstacionesDTO {
         this.longitud = longitud;
     }
 
-    public Double getPrecipitacionAcumuladaAñoHidrologico() {
-        return precipitacionAcumuladaAñoHidrologico;
-    }
-
-    public void setPrecipitacionAcumuladaAñoHidrologico(Double precipitacionAcumuladaAñoHidrologico) {
-        this.precipitacionAcumuladaAñoHidrologico = precipitacionAcumuladaAñoHidrologico;
-    }
-
-    public Double getPrecipitacion1h() {
-        return precipitacion1h;
-    }
-
-    public void setPrecipitacion1h(Double precipitacion1h) {
-        this.precipitacion1h = precipitacion1h;
-    }
-
-    public Double getPrecipitacion3h() {
-        return precipitacion3h;
-    }
-
-    public void setPrecipitacion3h(Double precipitacion3h) {
-        this.precipitacion3h = precipitacion3h;
-    }
-
-    public Double getPrecipitacion6h() {
-        return precipitacion6h;
-    }
-
-    public void setPrecipitacion6h(Double precipitacion6h) {
-        this.precipitacion6h = precipitacion6h;
-    }
-
-    public Double getPrecipitacion12h() {
-        return precipitacion12h;
-    }
-
-    public void setPrecipitacion12h(Double precipitacion12h) {
-        this.precipitacion12h = precipitacion12h;
-    }
-
-    public Double getPrecipitacion24h() {
-        return precipitacion24h;
-    }
-
-    public void setPrecipitacion24h(Double precipitacion24h) {
-        this.precipitacion24h = precipitacion24h;
-    }
-
     public String getRedOrigen() {
         return redOrigen;
     }
 
     public void setRedOrigen(String redOrigen) {
         this.redOrigen = redOrigen;
+    }
+
+    public String getGeom() {
+        return geom;
+    }
+
+    public void setGeom(String geom) {
+        this.geom = geom;
+    }
+
+    public Timestamp getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(Timestamp fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
+    }
+
+    public PrecipitacionesDTO getPrecipitacionesDTO() {
+        return precipitacionesDTO;
+    }
+
+    public void setPrecipitacionesDTO(PrecipitacionesDTO precipitacionesDTO) {
+        this.precipitacionesDTO = precipitacionesDTO;
     }
 }

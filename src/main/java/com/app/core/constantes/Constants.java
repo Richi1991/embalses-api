@@ -10,6 +10,7 @@ public class Constants {
     public static final String EMB0006 = "EMB_E_0006";
     public static final String EMB0007 = "EMB_E_0007";
     public static final String EMB0008 = "EMB_E_0008";
+    public static final String EMB0009 = "EMB_E_0009";
 
     public static final String UN_DIA = "1 day";
 
