@@ -108,12 +108,11 @@ public class PrecipitacionesService {
     }
 
     public void getAndSavePrecipitacionesRealTime() {
-        WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
+        options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--disable-gpu");
 
         WebDriver driver = new ChromeDriver(options);
 

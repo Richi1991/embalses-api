@@ -37,7 +37,7 @@ public class PrecipitacionesController {
 
         precipitacionesService.getAndSavePrecipitacionesRealTime();
 
-        return ResponseEntity.ok("Datos historico_cuenca_segura_diario insertados en Neon");
+        return ResponseEntity.ok("Insert Precipitaciones Last Value OK");
     }
 
     @GetMapping("/get_precipitaciones_last_value")
