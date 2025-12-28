@@ -16,8 +16,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +27,7 @@ public class PrecipitacionesService {
     private PrecipitacionesDAO precipitacionesDAO;
 
     public void insertarEstaciones() {
-        WebDriverManager.chromedriver().setup();
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080");
-
-        WebDriver driver = new ChromeDriver(options);
+        WebDriver driver = createDriver();
 
         try {
             System.out.println("--- Iniciando captura de Precipitaciones CHSegura ---");
@@ -104,15 +95,7 @@ public class PrecipitacionesService {
     }
 
     public void getAndSavePrecipitacionesRealTime() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--window-size=1920,1080");
-        options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36");
-
-        WebDriver driver = new ChromeDriver(options);
+        WebDriver driver = createDriver();
 
         try {
             System.out.println("--- Iniciando captura de Precipitaciones CHSegura ---");
@@ -202,5 +185,22 @@ public class PrecipitacionesService {
     public List<EstacionesDTO> extraerPrecipitacionesRealTime() {
         return precipitacionesDAO.getPrecipitacionesRealTime();
     }
+
+    private WebDriver createDriver() {
+        WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+
+        // 🔥 CLAVE PARA RENDER
+        options.setBinary("/usr/bin/chromium");
+
+        return new ChromeDriver(options);
+    }
+
 
 }

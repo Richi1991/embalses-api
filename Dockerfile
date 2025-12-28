@@ -10,7 +10,7 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17.0.1-jdk-slim
 # Copiamos el archivo .jar generado en el paso anterior
 # Asegúrate de que el nombre coincida con el <finalName> de tu pom.xml
-COPY --from=build /target/*.jar app.jar
+embalseschs-0.0.1-SNAPSHOT.jar
 
 # Exponemos el puerto que usa Spring Boot por defecto
 EXPOSE 8080
