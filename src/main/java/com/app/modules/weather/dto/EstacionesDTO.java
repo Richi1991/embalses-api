@@ -1,15 +1,30 @@
 package com.app.modules.weather.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.sql.Timestamp;
 
 public class EstacionesDTO {
 
+    @JsonProperty("latitud")
     private String latitud;
+
+    @JsonProperty("provincia")
     private String provincia;
+
+    @JsonProperty("altitud")
     private Long altitud;
+
+    @JsonProperty("indicativo")
     private String indicativo;
+
+    @JsonProperty("nombre")
     private String nombre;
+
+    @JsonProperty("indsinop")
     private String indsinop;
+
+    @JsonProperty("longitud")
     private String longitud;
     private String redOrigen;
     private String geom;

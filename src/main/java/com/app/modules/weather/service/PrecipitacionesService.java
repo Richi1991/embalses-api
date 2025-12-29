@@ -5,6 +5,9 @@ import com.app.modules.weather.dao.PrecipitacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,6 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;

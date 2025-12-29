@@ -110,4 +110,7 @@ public class EstacionesDAO {
         dto.setRedOrigen(rs.getString("red_origen"));
         return dto;
     }
+
+    public void insertarDatosClimatologicosAemetFilterByProvincia(List<EstacionesDTO> estacionesDTOListToInsert) {
+    }
 }
