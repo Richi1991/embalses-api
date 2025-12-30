@@ -19,13 +19,13 @@ public class HistoricoPrecipitaciones {
     @Column(name = "indicativo")
     private String indicativo;
 
-    @Column(name = "valor_1h", precision = 4, scale = 1)
+    @Column(name = "valor_1h")
     private Double valor1h;
 
-    @Column(name = "valor_24h", precision = 4, scale = 1)
+    @Column(name = "valor_24h")
     private Double valor24h;
 
-    @Column(name = "valor_ytd", precision = 4, scale = 1)
+    @Column(name = "valor_ytd")
     private Double valorYtd;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
@@ -41,11 +41,28 @@ public class HistoricoPrecipitaciones {
     @Column(name = "tmed")
     private Double tmed;
 
-    public void setIndicativo(String indicativo) { this.indicativo = indicativo; }
-    public void setValor24h(Double valor24h) { this.valor24h = valor24h; }
-    public void setFechaRegistro(Instant fechaRegistro) { this.fechaRegistro = fechaRegistro; }
-    public void setTmax(Double tmax) { this.tmax = tmax; }
-    public void setTmin(Double tmin) { this.tmin = tmin; }
-    public void setTmed(Double tmed) { this.tmed = tmed; }
+    public void setIndicativo(String indicativo) {
+        this.indicativo = indicativo;
+    }
+
+    public void setValor24h(Double valor24h) {
+        this.valor24h = valor24h;
+    }
+
+    public void setFechaRegistro(Instant fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
+
+    public void setTmax(Double tmax) {
+        this.tmax = tmax;
+    }
+
+    public void setTmin(Double tmin) {
+        this.tmin = tmin;
+    }
+
+    public void setTmed(Double tmed) {
+        this.tmed = tmed;
+    }
 
 }
