@@ -23,4 +23,5 @@ public class Constants {
     public static final String suremet = "suremet";
     public static final String COMA = ",";
     public static final String PUNTO = ".";
+    public static final String ES_NUMERO = "^-?\\d+([.,]\\d+)?$";
 }

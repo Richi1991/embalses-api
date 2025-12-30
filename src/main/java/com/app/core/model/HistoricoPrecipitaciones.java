@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 
 @Entity
@@ -19,18 +20,15 @@ public class HistoricoPrecipitaciones {
     @Column(name = "indicativo")
     private String indicativo;
 
-    @Column(name = "valor_1h")
-    private Double valor1h;
+    @Column(name = "nombre")
+    private String nombre;
 
     @Column(name = "valor_24h")
     private Double valor24h;
 
-    @Column(name = "valor_ytd")
-    private Double valorYtd;
-
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "fecha_registro")
-    private Instant fechaRegistro;
+    private Timestamp fechaRegistro;
 
     @Column(name = "tmax")
     private Double tmax;
@@ -41,28 +39,67 @@ public class HistoricoPrecipitaciones {
     @Column(name = "tmed")
     private Double tmed;
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getIndicativo() {
+        return indicativo;
+    }
+
     public void setIndicativo(String indicativo) {
         this.indicativo = indicativo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Double getValor24h() {
+        return valor24h;
     }
 
     public void setValor24h(Double valor24h) {
         this.valor24h = valor24h;
     }
 
-    public void setFechaRegistro(Instant fechaRegistro) {
+    public Timestamp getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(Timestamp fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
+    }
+
+    public Double getTmax() {
+        return tmax;
     }
 
     public void setTmax(Double tmax) {
         this.tmax = tmax;
     }
 
+    public Double getTmin() {
+        return tmin;
+    }
+
     public void setTmin(Double tmin) {
         this.tmin = tmin;
+    }
+
+    public Double getTmed() {
+        return tmed;
     }
 
     public void setTmed(Double tmed) {
         this.tmed = tmed;
     }
-
 }
