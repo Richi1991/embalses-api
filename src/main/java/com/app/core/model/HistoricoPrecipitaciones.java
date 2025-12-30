@@ -36,13 +36,13 @@ public class HistoricoPrecipitaciones {
     private Instant fechaRegistro;
 
     @Column(name = "tmax", precision = 4, scale = 1)
-    private Double tmax;
+    private Double tMax;
 
     @Column(name = "tmin", precision = 4, scale = 1)
-    private Double tmin;
+    private Double tMin;
 
     @Column(name = "tmed", precision = 4, scale = 1)
-    private Double tmed;
+    private Double tMed;
 
 
 }
