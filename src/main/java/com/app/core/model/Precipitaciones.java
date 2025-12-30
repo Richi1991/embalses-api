@@ -20,34 +20,34 @@ public class Precipitaciones {
     @Column(name = "nombre", length = 50)
     private String nombre;
 
-    @Column(name = "precipitacion_1h", precision = 4)
+    @Column(name = "precipitacion_1h")
     private Double precipitacion1h;
 
-    @Column(name = "precipitacion_3h", precision = 4)
+    @Column(name = "precipitacion_3h")
     private Double precipitacion3h;
 
-    @Column(name = "precipitacion_6h", precision = 4)
+    @Column(name = "precipitacion_6h")
     private Double precipitacion6h;
 
-    @Column(name = "precipitacion_12h", precision = 4)
+    @Column(name = "precipitacion_12h")
     private Double precipitacion12h;
 
-    @Column(name = "precipitacion_24h", precision = 4)
+    @Column(name = "precipitacion_24h")
     private Double precipitacion24h;
 
-    @Column(name = "precipitacion_48h", precision = 4)
+    @Column(name = "precipitacion_48h")
     private Double precipitacion48h;
 
-    @Column(name = "precipitacion_7d", precision = 4)
+    @Column(name = "precipitacion_7d")
     private Double precipitacion7d;
 
-    @Column(name = "precipitacion_30d", precision = 4)
+    @Column(name = "precipitacion_30d")
     private Double precipitacion30d;
 
-    @Column(name = "precipitacion_hidrologic_year", precision = 4)
+    @Column(name = "precipitacion_hidrologic_year")
     private Double precipitacionHidrologicYear;
 
-    @Column(name = "precipitacion_ytd", precision = 4)
+    @Column(name = "precipitacion_ytd")
     private Double precipitacionYtd;
 
     public PrecipitacioneId getId() {

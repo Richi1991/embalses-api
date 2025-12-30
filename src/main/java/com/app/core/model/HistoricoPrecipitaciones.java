@@ -32,13 +32,13 @@ public class HistoricoPrecipitaciones {
     @Column(name = "fecha_registro")
     private Instant fechaRegistro;
 
-    @Column(name = "tmax", precision = 4, scale = 1)
+    @Column(name = "tmax")
     private Double tmax;
 
-    @Column(name = "tmin", precision = 4, scale = 1)
+    @Column(name = "tmin")
     private Double tmin;
 
-    @Column(name = "tmed", precision = 4, scale = 1)
+    @Column(name = "tmed")
     private Double tmed;
 
     public void setIndicativo(String indicativo) { this.indicativo = indicativo; }
