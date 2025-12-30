@@ -1,13 +1,13 @@
 package com.app.core.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -49,6 +49,10 @@ public class Precipitaciones {
 
     @Column(name = "precipitacion_ytd")
     private Double precipitacionYtd;
+
+    @ManyToOne
+    @JoinColumn(name = "indicativo", referencedColumnName = "indicativo", insertable = false, updatable = false)
+    private EstacionesMeteorologicas estacion;
 
     public PrecipitacioneId getId() {
         return id;
@@ -144,5 +148,13 @@ public class Precipitaciones {
 
     public void setPrecipitacionYtd(Double precipitacionYtd) {
         this.precipitacionYtd = precipitacionYtd;
+    }
+
+    public EstacionesMeteorologicas getEstacion() {
+        return estacion;
+    }
+
+    public void setEstacion(EstacionesMeteorologicas estacion) {
+        this.estacion = estacion;
     }
 }

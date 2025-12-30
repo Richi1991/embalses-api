@@ -148,7 +148,36 @@ public class PrecipitacionesService {
     }
 
     public List<EstacionesDTO> extraerPrecipitacionesRealTime() {
-        return precipitacionesDAO.getPrecipitacionesRealTime();
+        // 1. Usamos el repository en lugar del DAO
+        List<Precipitaciones> ultimasPrecipitaciones = precipitacionesRepository.findLatestPrecipitacionesForEachEstacion();
+
+        // 2. Transformamos las entidades a DTOs
+        return ultimasPrecipitaciones.stream().map(p -> {
+            EstacionesDTO dto = new EstacionesDTO();
+
+            // 2. Datos de la Estación (Vienen a través de la relación ManyToOne)
+            // JPA hace p.getEstacion() de forma eficiente
+            if (p.getEstacion() != null) {
+                dto.setIndicativo(p.getEstacion().getIndicativo());
+                dto.setNombre(p.getEstacion().getNombre());
+                dto.setLatitud(p.getEstacion().getLatitud());
+                dto.setLongitud(p.getEstacion().getLongitud());
+                dto.setGeom(p.getEstacion().getGeom() != null ? p.getEstacion().getGeom().toString() : null);
+                dto.setProvincia(p.getEstacion().getProvincia());
+            }
+
+            dto.setFechaActualizacion(p.getId().getFechaActualizacion());
+
+            PrecipitacionesDTO pDto = new PrecipitacionesDTO();
+            pDto.setPrecipitacion1h(p.getPrecipitacion1h());
+            pDto.setPrecipitacion3h(p.getPrecipitacion3h());
+            pDto.setPrecipitacion6h(p.getPrecipitacion6h());
+            pDto.setPrecipitacion12h(p.getPrecipitacion12h());
+            pDto.setPrecipitacion24h(p.getPrecipitacion24h());
+
+            dto.setPrecipitacionesDTO(pDto);
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     public WebDriver createDriver() {

@@ -2,6 +2,7 @@ package com.app.core.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jdk.jfr.Timespan;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,13 +11,13 @@ import org.hibernate.annotations.ColumnDefault;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Objects;
 
-
+@Getter
+@Setter
+@EqualsAndHashCode
 @Embeddable
 public class PrecipitacioneId implements Serializable {
     private static final long serialVersionUID = 1361898944530548992L;
-
     @Column(name = "indicativo", nullable = false, length = 8)
     private String indicativo;
 
@@ -24,31 +25,19 @@ public class PrecipitacioneId implements Serializable {
     @Column(name = "fecha_actualizacion", nullable = false)
     private Timestamp fechaActualizacion;
 
-
-    public PrecipitacioneId() {}
+    public String getIndicativo() {
+        return indicativo;
+    }
 
     public void setIndicativo(String indicativo) {
         this.indicativo = indicativo;
     }
 
+    public Timestamp getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
     public void setFechaActualizacion(Timestamp fechaActualizacion) {
         this.fechaActualizacion = fechaActualizacion;
     }
-
-    public String getIndicativo() { return indicativo; }
-    public Timestamp getFechaActualizacion() { return fechaActualizacion; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PrecipitacioneId that)) return false;
-        return Objects.equals(indicativo, that.indicativo) &&
-                Objects.equals(fechaActualizacion, that.fechaActualizacion);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(indicativo, fechaActualizacion);
-    }
-
 }
