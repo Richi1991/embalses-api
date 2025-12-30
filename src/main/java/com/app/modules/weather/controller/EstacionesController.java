@@ -1,7 +1,7 @@
 package com.app.modules.weather.controller;
 
-import com.app.modules.hidrology.exceptions.Exceptions;
-import com.app.modules.hidrology.exceptions.FunctionalExceptions;
+import com.app.core.exceptions.Exceptions;
+import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.service.EstacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class EstacionesController {
     }
 
     @GetMapping("/insert_historico_precipitaciones_aemet/{provincia}/{fechaInicio}/{fechaFin}")
-    public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws IOException, FunctionalExceptions {
+    public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws IOException, FunctionalExceptions, SQLException {
         weatherService.insertarHistoricoPrecipitacionesAemet(provincia, apiKeyAemet, fechaInicio, fechaFin);
     }
 

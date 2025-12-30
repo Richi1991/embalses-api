@@ -1,5 +1,9 @@
 package com.app.modules.weather.dto;
 
+import lombok.ToString;
+
+import java.util.Date;
+@ToString
 public class PrecipitacionesDTO {
 
     private Double precipitacion1h;
@@ -9,6 +13,7 @@ public class PrecipitacionesDTO {
     private Double precipitacion24h;
     private Double precipitacionAcumuladaAñoHidrologico;
     private Double precipitacionYTD;
+    private Date fecha;
 
     public PrecipitacionesDTO() {
     }
@@ -67,5 +72,13 @@ public class PrecipitacionesDTO {
 
     public void setPrecipitacionYTD(Double precipitacionYTD) {
         this.precipitacionYTD = precipitacionYTD;
+    }
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
     }
 }

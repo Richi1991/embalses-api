@@ -1,4 +1,4 @@
-package com.app.modules.hidrology.exceptions;
+package com.app.core.exceptions;
 
 import com.app.core.constantes.Constants;
 

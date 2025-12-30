@@ -1,6 +1,8 @@
 package com.app.modules.weather.service;
 
 import com.app.core.constantes.Constants;
+import com.app.core.model.Precipitaciones;
+import com.app.core.repository.PrecipitacionesRepository;
 import com.app.modules.weather.dao.PrecipitacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
@@ -27,12 +29,16 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PrecipitacionesService {
 
     @Autowired
     private PrecipitacionesDAO precipitacionesDAO;
+
+    @Autowired
+    private PrecipitacionesRepository precipitacionesRepository;
 
     public void getAndSavePrecipitacionesRealTime() {
         WebDriver driver = createDriver();
@@ -99,9 +105,27 @@ public class PrecipitacionesService {
                 }
 
                 // Guardar batch si alcanza el tamaño o es la última fila
-                if (batch.size() == batchSize || i == filas.size() - 1) {
-                    precipitacionesDAO.guardarValoresPrecipitaciones(batch);
-                    batch.clear(); // liberar memoria
+                if (batch.size() >= batchSize || i == filas.size() - 1) {
+                    if (!batch.isEmpty()) {
+                        // CONVERSIÓN: De DTO a Entity
+                        List<Precipitaciones> entidades = batch.stream().map(dto -> {
+                            Precipitaciones p = new Precipitaciones();
+                            p.setNombre(dto.getNombre());
+                            p.setPrecipitacion1h(dto.getPrecipitacionesDTO().getPrecipitacion1h());
+                            p.setPrecipitacion3h(dto.getPrecipitacionesDTO().getPrecipitacion3h());
+                            p.setPrecipitacion6h(dto.getPrecipitacionesDTO().getPrecipitacion6h());
+                            p.setPrecipitacion12h(dto.getPrecipitacionesDTO().getPrecipitacion12h());
+                            p.setPrecipitacion24h(dto.getPrecipitacionesDTO().getPrecipitacion24h());
+                            // La fecha se pondrá sola si usas @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                            return p;
+                        }).collect(Collectors.toList());
+
+                        // GUARDADO: Ahora sí usamos el Repository con Entities
+                        precipitacionesRepository.saveAll(entidades);
+
+                        System.out.println("Lote de " + entidades.size() + " registros guardado con éxito.");
+                        batch.clear(); // ¡IMPORTANTE! Vaciar el batch para la siguiente tanda
+                    }
                 }
             }
 

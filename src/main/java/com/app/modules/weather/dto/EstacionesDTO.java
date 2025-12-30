@@ -1,9 +1,11 @@
 package com.app.modules.weather.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 
 import java.sql.Timestamp;
 
+@ToString
 public class EstacionesDTO {
 
     @JsonProperty("latitud")
@@ -30,6 +32,7 @@ public class EstacionesDTO {
     private String geom;
     private Timestamp fechaActualizacion;
     private PrecipitacionesDTO precipitacionesDTO;
+    private TemperaturasDTO temperaturasDTO;
 
     public EstacionesDTO() {
     }
@@ -123,5 +126,13 @@ public class EstacionesDTO {
 
     public void setPrecipitacionesDTO(PrecipitacionesDTO precipitacionesDTO) {
         this.precipitacionesDTO = precipitacionesDTO;
+    }
+
+    public TemperaturasDTO getTemperaturasDTO() {
+        return temperaturasDTO;
+    }
+
+    public void setTemperaturasDTO(TemperaturasDTO temperaturasDTO) {
+        this.temperaturasDTO = temperaturasDTO;
     }
 }

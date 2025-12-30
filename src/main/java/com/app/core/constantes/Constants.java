@@ -21,4 +21,6 @@ public class Constants {
     public static final String AEMET = "aemet";
     public static final String CHS = "chs";
     public static final String suremet = "suremet";
+    public static final String COMA = ",";
+    public static final String PUNTO = ".";
 }

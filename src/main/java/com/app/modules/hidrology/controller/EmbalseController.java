@@ -2,8 +2,8 @@ package com.app.modules.hidrology.controller;
 
 import com.app.modules.hidrology.dto.EmbalseDTO;
 import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
-import com.app.modules.hidrology.exceptions.Exceptions;
-import com.app.modules.hidrology.exceptions.FunctionalExceptions;
+import com.app.core.exceptions.Exceptions;
+import com.app.core.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;

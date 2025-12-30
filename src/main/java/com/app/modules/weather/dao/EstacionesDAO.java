@@ -2,15 +2,12 @@ package com.app.modules.weather.dao;
 
 import com.app.core.config.DatabaseConfig;
 import com.app.core.constantes.Constants;
-import com.app.modules.hidrology.exceptions.Exceptions;
-import com.app.modules.hidrology.exceptions.FunctionalExceptions;
+import com.app.core.exceptions.Exceptions;
+import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dto.EstacionesDTO;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +108,4 @@ public class EstacionesDAO {
         return dto;
     }
 
-    public void insertarDatosClimatologicosAemetFilterByProvincia(List<EstacionesDTO> estacionesDTOListToInsert) {
-    }
 }
