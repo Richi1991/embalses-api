@@ -50,5 +50,99 @@ public class Precipitaciones {
     @Column(name = "precipitacion_ytd", precision = 4)
     private Double precipitacionYtd;
 
+    public PrecipitacioneId getId() {
+        return id;
+    }
 
+    public void setId(PrecipitacioneId id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Double getPrecipitacion1h() {
+        return precipitacion1h;
+    }
+
+    public void setPrecipitacion1h(Double precipitacion1h) {
+        this.precipitacion1h = precipitacion1h;
+    }
+
+    public Double getPrecipitacion3h() {
+        return precipitacion3h;
+    }
+
+    public void setPrecipitacion3h(Double precipitacion3h) {
+        this.precipitacion3h = precipitacion3h;
+    }
+
+    public Double getPrecipitacion6h() {
+        return precipitacion6h;
+    }
+
+    public void setPrecipitacion6h(Double precipitacion6h) {
+        this.precipitacion6h = precipitacion6h;
+    }
+
+    public Double getPrecipitacion12h() {
+        return precipitacion12h;
+    }
+
+    public void setPrecipitacion12h(Double precipitacion12h) {
+        this.precipitacion12h = precipitacion12h;
+    }
+
+    public Double getPrecipitacion24h() {
+        return precipitacion24h;
+    }
+
+    public void setPrecipitacion24h(Double precipitacion24h) {
+        this.precipitacion24h = precipitacion24h;
+    }
+
+    public Double getPrecipitacion48h() {
+        return precipitacion48h;
+    }
+
+    public void setPrecipitacion48h(Double precipitacion48h) {
+        this.precipitacion48h = precipitacion48h;
+    }
+
+    public Double getPrecipitacion7d() {
+        return precipitacion7d;
+    }
+
+    public void setPrecipitacion7d(Double precipitacion7d) {
+        this.precipitacion7d = precipitacion7d;
+    }
+
+    public Double getPrecipitacion30d() {
+        return precipitacion30d;
+    }
+
+    public void setPrecipitacion30d(Double precipitacion30d) {
+        this.precipitacion30d = precipitacion30d;
+    }
+
+    public Double getPrecipitacionHidrologicYear() {
+        return precipitacionHidrologicYear;
+    }
+
+    public void setPrecipitacionHidrologicYear(Double precipitacionHidrologicYear) {
+        this.precipitacionHidrologicYear = precipitacionHidrologicYear;
+    }
+
+    public Double getPrecipitacionYtd() {
+        return precipitacionYtd;
+    }
+
+    public void setPrecipitacionYtd(Double precipitacionYtd) {
+        this.precipitacionYtd = precipitacionYtd;
+    }
 }

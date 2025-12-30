@@ -8,8 +8,6 @@ import org.hibernate.annotations.ColumnDefault;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "historico_precipitaciones")
 public class HistoricoPrecipitaciones {
@@ -18,9 +16,8 @@ public class HistoricoPrecipitaciones {
     @Column(name = "id_historico", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "indicativo", referencedColumnName = "indicativo")
-    private EstacionesMeteorologicas indicativo;
+    @Column(name = "indicativo")
+    private String indicativo;
 
     @Column(name = "valor_1h", precision = 4, scale = 1)
     private Double valor1h;
@@ -36,13 +33,19 @@ public class HistoricoPrecipitaciones {
     private Instant fechaRegistro;
 
     @Column(name = "tmax", precision = 4, scale = 1)
-    private Double tMax;
+    private Double tmax;
 
     @Column(name = "tmin", precision = 4, scale = 1)
-    private Double tMin;
+    private Double tmin;
 
     @Column(name = "tmed", precision = 4, scale = 1)
-    private Double tMed;
+    private Double tmed;
 
+    public void setIndicativo(String indicativo) { this.indicativo = indicativo; }
+    public void setValor24h(Double valor24h) { this.valor24h = valor24h; }
+    public void setFechaRegistro(Instant fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+    public void setTmax(Double tmax) { this.tmax = tmax; }
+    public void setTmin(Double tmin) { this.tmin = tmin; }
+    public void setTmed(Double tmed) { this.tmed = tmed; }
 
 }
