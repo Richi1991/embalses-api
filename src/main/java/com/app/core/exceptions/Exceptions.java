@@ -12,7 +12,9 @@ public enum Exceptions {
     EMB_E_0006(Constants.EMB0006, "No existe el embalse %s"),
     EMB_E_0007(Constants.EMB0007, "Ha habido un error insertando las estaciones de la Aemet en BD"),
     EMB_E_0008(Constants.EMB0008, "Ha habido un error obteniendo las estaciones meteorologicas"),
-    EMB_E_0009(Constants.EMB0009, "Ha habido un error obteniendo las estaciones meteorologicas y sus precipitaciones");
+    EMB_E_0009(Constants.EMB0009, "Ha habido un error obteniendo las estaciones meteorologicas y sus precipitaciones"),
+    EMB_E_0010(Constants.EMB0010, "Error en la request %s"),
+    EMB_E_0011(Constants.EMB0011, "Error en la response %s");
 
     private String codigoError;
     private String descripcionError;

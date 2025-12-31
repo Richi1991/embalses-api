@@ -24,4 +24,14 @@ public class HistoricoPrecipitacionesController {
     public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws IOException, FunctionalExceptions, SQLException {
         historicoPrecipitacionesService.insertarHistoricoPrecipitacionesAemet(provincia, apiKeyAemet, fechaInicio, fechaFin);
     }
+
+    /**
+     * fechaInicio ej. 20251201
+     * fechaFin ej. 20251225
+     */
+    @GetMapping("/insertar_historico_precipitaciones_chs/{fechaInicio}/{fechaFin}")
+    public void insertHistoricoPrecipitacionesChs(@PathVariable(value= "temporada") String temporada, @PathVariable(value= "fechaInicio") String fechaInicio,
+                                                  @PathVariable(value= "fechaFin") String fechaFin) throws FunctionalExceptions {
+        historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(fechaInicio, fechaFin);
+    }
 }

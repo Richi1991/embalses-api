@@ -11,6 +11,9 @@ import com.app.modules.weather.dto.TemperaturasDTO;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,12 +21,15 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,7 +63,6 @@ public class HistoricoPrecipitacionesService {
                 try (Response response = client.newCall(request).execute()) {
                     if (response.isSuccessful() && response.body() != null) {
                         String jsonData = response.body().string();
-
                         JsonNode node = new ObjectMapper().readTree(jsonData);
                         newUrl = node.get("datos").asText();
                         if (newUrl != null) {
@@ -75,46 +80,54 @@ public class HistoricoPrecipitacionesService {
                                     JsonNode rootNode = mapper.readTree(jsonDatosClimaEstacion);
 
                                     for (JsonNode nodo : rootNode) {
-                                        System.out.println("Procesando nodo: " + nodo.path("indicativo").asText() + " fecha: " + nodo.path("fecha").asText());
-                                        try {
-                                            // Usamos path() para todo. Si el campo no existe, asText es "" y asDouble es 0.0
-                                            String indicativo = nodo.path("indicativo").asText();
-                                            String fechaStr = nodo.path("fecha").asText();
+                                        if (nodo.path("nombre").asText().equals("MURCIA")) {
+                                            System.out.println("Procesando nodo: " + nodo.path("indicativo").asText() + " fecha: " + nodo.path("fecha").asText());
 
-                                            if (indicativo.isEmpty() || fechaStr.isEmpty()) {
-                                                continue; // Saltamos registros incompletos
+                                            try {
+                                                // Usamos path() para todo. Si el campo no existe, asText es "" y asDouble es 0.0
+                                                String indicativo = nodo.path("indicativo").asText();
+                                                String fechaStr = nodo.path("fecha").asText();
+
+                                                if (indicativo.isEmpty() || fechaStr.isEmpty()) {
+                                                    continue; // Saltamos registros incompletos
+                                                }
+
+                                                EstacionesDTO dto = new EstacionesDTO();
+                                                dto.setIndicativo(indicativo);
+                                                dto.setNombre(nodo.path("nombre").asText());
+
+                                                LocalDate localDate = LocalDate.parse(fechaStr);
+                                                dto.setFechaActualizacion(Timestamp.valueOf(localDate.atStartOfDay()));
+
+                                                PrecipitacionesDTO prec = new PrecipitacionesDTO();
+                                                // Usamos un helper para limpiar las comas y manejar "Ip"
+                                                prec.setPrecipitacion24h(parsearDouble(nodo.path("prec").asText()));
+                                                dto.setPrecipitacionesDTO(prec);
+
+                                                TemperaturasDTO temp = new TemperaturasDTO();
+                                                temp.setTmed(parsearDouble(nodo.path("tmed").asText()));
+                                                temp.setTmin(parsearDouble(nodo.path("tmin").asText()));
+                                                temp.setTmax(parsearDouble(nodo.path("tmax").asText()));
+                                                dto.setTemperaturasDTO(temp);
+
+                                                estacionesDTOListToInsert.add(dto);
+
+                                            } catch (Exception e) {
+                                                System.err.println("Error en nodo de estación " + nodo.path("indicativo").asText() + ": " + e.getMessage());
                                             }
-
-                                            EstacionesDTO dto = new EstacionesDTO();
-                                            dto.setIndicativo(indicativo);
-                                            dto.setNombre(nodo.path("nombre").asText());
-
-                                            LocalDate localDate = LocalDate.parse(fechaStr);
-                                            dto.setFechaActualizacion(Timestamp.valueOf(localDate.atStartOfDay()));
-
-                                            PrecipitacionesDTO prec = new PrecipitacionesDTO();
-                                            // Usamos un helper para limpiar las comas y manejar "Ip"
-                                            prec.setPrecipitacion24h(parsearDouble(nodo.path("prec").asText()));
-                                            dto.setPrecipitacionesDTO(prec);
-
-                                            TemperaturasDTO temp = new TemperaturasDTO();
-                                            temp.setTmed(parsearDouble(nodo.path("tmed").asText()));
-                                            temp.setTmin(parsearDouble(nodo.path("tmin").asText()));
-                                            temp.setTmax(parsearDouble(nodo.path("tmax").asText()));
-                                            dto.setTemperaturasDTO(temp);
-
-                                            estacionesDTOListToInsert.add(dto);
-
-                                        } catch (Exception e) {
-                                            System.err.println("Error en nodo de estación " + nodo.path("indicativo").asText() + ": " + e.getMessage());
                                         }
+
                                     }
+                                } else {
+                                    System.out.println("No ha obtenido datos:" +responseDatosClimaEstacion.body());
                                 }
                             }catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
                         }
 
+                    } else {
+                        System.out.println("No se han obtenido datos:" +response.body());
                     }
                 }catch (IOException e) {
                     throw new RuntimeException(e);
@@ -233,5 +246,87 @@ public class HistoricoPrecipitacionesService {
         } catch (NumberFormatException e) {
             return 0.0;
         }
+    }
+
+    public void insertarHistoricoPrecipitacionesChs(String fechaInicio, String fechaFin) throws FunctionalExceptions {
+
+        OkHttpClient client = new OkHttpClient();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        LocalDate localDateFechaInicio = LocalDate.parse(fechaInicio,formatter);
+        LocalDate localDateFechaFin = LocalDate.parse(fechaFin,formatter);
+
+        // Definimos el formateador una sola vez fuera del bucle para mejor rendimiento
+        DateTimeFormatter fmtCompacto = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        while (localDateFechaInicio.isBefore(localDateFechaFin) || localDateFechaInicio.isEqual(localDateFechaFin)) {
+
+            String anoHidrologico = obtenerAnoHidrologico(localDateFechaInicio);
+
+            // Usamos el formato yyyyMMdd para la URL (ej: 20251201)
+            String fechaUrl = localDateFechaInicio.format(fmtCompacto);
+
+            try {
+                Request request = new Request.Builder()
+                        .url("https://www.chsegura.es/static/hidro_SAIH/" + anoHidrologico + "/InformeDiarioPrecipSAIH_" + fechaUrl + ".pdf")
+                        .get()
+                        .addHeader("cache-control", "no-cache")
+                        .build();
+                try (Response responseEstaciones = client.newCall(request).execute()) {
+                    if (responseEstaciones.isSuccessful() && responseEstaciones.body() != null) {
+                        // 1. Obtenemos el InputStream desde el cuerpo de la respuesta
+                        try (InputStream inputStream = responseEstaciones.body().byteStream();
+                             BufferedInputStream bufferedIn = new BufferedInputStream(inputStream);
+                             PDDocument document = PDDocument.load(bufferedIn)) {
+
+                            // 2. Usamos PDFTextStripper para extraer el texto
+                            PDFTextStripper stripper = new PDFTextStripper();
+                            String contenidoPdf = stripper.getText(document);
+
+                            // 3. Aquí ya puedes procesar el texto (ej. buscar datos de lluvia)
+                            System.out.println("Leído PDF de fecha: " + localDateFechaInicio);
+//                            procesarDatosLluvia(contenidoPdf);
+
+                        } catch (IOException e) {
+                            System.err.println("Error al procesar el PDF: " + e.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    Exceptions.EMB_E_0011.lanzarExcepcionWithParams(e.getMessage().concat("error en la response obteniendo el informe diario de precipitaciones del SAIH CHS"));
+                }
+
+            } catch (Exception e) {
+                Exceptions.EMB_E_0010.lanzarExcepcionWithParams(e.getMessage().concat("error en la request obteniendo el informe diario de precipitaciones del SAIH CHS"));
+            }
+
+
+            // HACER AQUÍ: Ejecutar la llamada (client.newCall(request).execute()...)
+
+            // AVANZAR UN DÍA: Reasignamos la variable para evitar bucle infinito
+            localDateFechaInicio = localDateFechaInicio.plusDays(1);
+        }
+
+
+
+
+    }
+
+    private String obtenerAnoHidrologico(LocalDate localDateFechaInicio) {
+        String anoHidrologico;
+        // Si el mes es >= 10, el año de inicio es el año de la fecha.
+        // Si no, el año de inicio es el año anterior.
+        int year = (localDateFechaInicio.getMonthValue() >= 10)
+                ? localDateFechaInicio.getYear()
+                : localDateFechaInicio.getYear() - 1;
+
+        String anioActual = String.valueOf(year);
+        String anioSiguienteCorto = String.valueOf((year + 1) % 100);
+
+        // Asegurar que si el año es 2004-2005, el final sea "05" y no "5"
+        if (anioSiguienteCorto.length() == 1) anioSiguienteCorto = "0" + anioSiguienteCorto;
+
+        anoHidrologico = anioActual + anioSiguienteCorto;
+        return anoHidrologico;
     }
 }
