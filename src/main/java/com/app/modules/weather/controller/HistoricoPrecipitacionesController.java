@@ -20,7 +20,7 @@ public class HistoricoPrecipitacionesController {
     @Value("${API_KEY_AEMET}")
     private String apiKeyAemet;
 
-    @GetMapping("/insert_historico_precipitaciones_aemet/{provincia}/{fechaInicio}/{fechaFin}")
+    @PostMapping("/insert_historico_precipitaciones_aemet/{provincia}/{fechaInicio}/{fechaFin}")
     public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws IOException, FunctionalExceptions, SQLException {
         historicoPrecipitacionesService.insertarHistoricoPrecipitacionesAemet(provincia, apiKeyAemet, fechaInicio, fechaFin);
     }
@@ -30,7 +30,7 @@ public class HistoricoPrecipitacionesController {
      * fechaFin ej. 20251225
      */
     @GetMapping("/insertar_historico_precipitaciones_chs/{fechaInicio}/{fechaFin}")
-    public void insertHistoricoPrecipitacionesChs(@PathVariable(value= "temporada") String temporada, @PathVariable(value= "fechaInicio") String fechaInicio,
+    public void insertHistoricoPrecipitacionesChs(@PathVariable(value= "fechaInicio") String fechaInicio,
                                                   @PathVariable(value= "fechaFin") String fechaFin) throws FunctionalExceptions {
         historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(fechaInicio, fechaFin);
     }

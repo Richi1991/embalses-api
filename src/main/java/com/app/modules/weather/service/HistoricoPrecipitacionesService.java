@@ -3,7 +3,9 @@ package com.app.modules.weather.service;
 import com.app.core.constantes.Constants;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
+import com.app.core.model.EstacionesMeteorologicas;
 import com.app.core.model.HistoricoPrecipitaciones;
+import com.app.core.repository.EstacionesMeteorologicasRepository;
 import com.app.core.repository.HistoricoPrecipitacionesRepository;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
@@ -13,7 +15,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,15 +25,17 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class HistoricoPrecipitacionesService {
@@ -42,6 +45,13 @@ public class HistoricoPrecipitacionesService {
 
     @Autowired
     private HistoricoPrecipitacionesRepository historicoPrecipitacionesRepository;
+
+    @Autowired
+    private EstacionesMeteorologicasRepository estacionesMeteorologicasRepository;
+
+    public HistoricoPrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
+        this.configureSSL();
+    }
 
     public void insertarHistoricoPrecipitacionesAemet(String provincia, String apiKeyAemet, String fechaInicio, String fechaFin) throws FunctionalExceptions {
 
@@ -255,12 +265,19 @@ public class HistoricoPrecipitacionesService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         LocalDate localDateFechaInicio = LocalDate.parse(fechaInicio,formatter);
+
         LocalDate localDateFechaFin = LocalDate.parse(fechaFin,formatter);
 
         // Definimos el formateador una sola vez fuera del bucle para mejor rendimiento
         DateTimeFormatter fmtCompacto = DateTimeFormatter.ofPattern("yyyyMMdd");
 
+        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = new ArrayList<>();
+
         while (localDateFechaInicio.isBefore(localDateFechaFin) || localDateFechaInicio.isEqual(localDateFechaFin)) {
+
+            Timestamp timestampFechaInicio = Timestamp.from(localDateFechaInicio.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            System.out.println("Fecha Inicio: " +timestampFechaInicio);
 
             String anoHidrologico = obtenerAnoHidrologico(localDateFechaInicio);
 
@@ -284,16 +301,27 @@ public class HistoricoPrecipitacionesService {
                             PDFTextStripper stripper = new PDFTextStripper();
                             String contenidoPdf = stripper.getText(document);
 
-                            // 3. Aquí ya puedes procesar el texto (ej. buscar datos de lluvia)
-                            System.out.println("Leído PDF de fecha: " + localDateFechaInicio);
-//                            procesarDatosLluvia(contenidoPdf);
+                            Map<String, Double> mapIndicativoPrecipitacionDiaria = extraerTotalesDesdePDF(contenidoPdf);
 
+                            mapIndicativoPrecipitacionDiaria.entrySet().stream().forEach(indicativoPreciDiaria -> {
+                                EstacionesMeteorologicas estacionMeteo = estacionesMeteorologicasRepository.findByIndicativo(indicativoPreciDiaria.getKey());
+
+                                if (estacionMeteo != null) {
+                                    HistoricoPrecipitaciones historicoPrecipitaciones = new HistoricoPrecipitaciones();
+                                    historicoPrecipitaciones.setIndicativo(estacionMeteo.getIndicativo());
+                                    historicoPrecipitaciones.setNombre(estacionMeteo.getNombre());
+                                    historicoPrecipitaciones.setValor24h(indicativoPreciDiaria.getValue());
+                                    historicoPrecipitaciones.setFechaRegistro(timestampFechaInicio);
+                                    historicoPrecipitacionesList.add(historicoPrecipitaciones);
+                                }
+                            });
                         } catch (IOException e) {
                             System.err.println("Error al procesar el PDF: " + e.getMessage());
                         }
                     }
                 } catch (Exception e) {
-                    Exceptions.EMB_E_0011.lanzarExcepcionWithParams(e.getMessage().concat("error en la response obteniendo el informe diario de precipitaciones del SAIH CHS"));
+                    System.err.println("Error en la response obteniendo el informe diario de precipitaciones del SAIH CHS: " +e);
+                    Exceptions.EMB_E_0011.lanzarExcepcionWithParams(e.getMessage().concat("Error en la response obteniendo el informe diario de precipitaciones del SAIH CHS"));
                 }
 
             } catch (Exception e) {
@@ -307,9 +335,7 @@ public class HistoricoPrecipitacionesService {
             localDateFechaInicio = localDateFechaInicio.plusDays(1);
         }
 
-
-
-
+        historicoPrecipitacionesRepository.saveAll(historicoPrecipitacionesList);
     }
 
     private String obtenerAnoHidrologico(LocalDate localDateFechaInicio) {
@@ -326,7 +352,62 @@ public class HistoricoPrecipitacionesService {
         // Asegurar que si el año es 2004-2005, el final sea "05" y no "5"
         if (anioSiguienteCorto.length() == 1) anioSiguienteCorto = "0" + anioSiguienteCorto;
 
-        anoHidrologico = anioActual + anioSiguienteCorto;
+        anoHidrologico = anioActual.concat("-").concat(anioSiguienteCorto);
         return anoHidrologico;
+    }
+
+    public Map<String, Double> extraerTotalesDesdePDF(String pdfTexto) {
+        Map<String, Double> resultados = new HashMap<>();
+
+        // Explicación del Regex Actualizado:
+        // ([0-9]{2}[A-Z][0-9A-Z]{4})   -> Grupo 1: Captura exactamente 7 caracteres alfanuméricos
+        //                                 (2 números, 1 letra, 4 alfanuméricos).
+        // .*?                          -> Salta el nombre de la estación.
+        // (\d+,\d+)                    -> Grupo 2: Captura un valor decimal.
+        // (?!.*\d+,\d+)                -> Asegura que sea el ÚLTIMO valor decimal de esa línea.
+
+        String regex = "([0-9]{2}[A-Z][0-9A-Z]{4}).*?(\\d+,\\d+)(?!.*\\d+,\\d+)";
+
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(pdfTexto);
+
+        while (matcher.find()) {
+            String indicativoPDF = matcher.group(1);
+            String valorStr = matcher.group(2);
+
+            // Aplicamos la normalización para pasarlo de 7 a 8 caracteres (P1 -> P01)
+            String indicativoBD = normalizarIndicativo(indicativoPDF);
+
+            try {
+                Double valor = Double.parseDouble(valorStr.replace(",", "."));
+                resultados.put(indicativoBD, valor);
+                System.out.println("Válido: " + indicativoPDF + " -> " + indicativoBD + " | Valor: " + valor);
+            } catch (NumberFormatException e) {
+                // Error de parseo, se ignora
+            }
+        }
+        return resultados;
+    }
+
+    private String normalizarIndicativo(String indicativo) {
+        // Si mide 7 y termina en P1, lo transformamos a P01 (8 caracteres)
+        if (indicativo != null && indicativo.length() == 7 && indicativo.endsWith("P1")) {
+            return indicativo.substring(0, 5) + "P01";
+        }
+        return indicativo; // Si no cumple, lo devuelve igual (aunque el regex ya filtra por 7)
+    }
+
+    public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
+        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{
+                new javax.net.ssl.X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) { }
+                }
+        };
+
+        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 }
