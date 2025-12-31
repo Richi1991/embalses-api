@@ -277,7 +277,7 @@ public class HistoricoPrecipitacionesService {
 
             Timestamp timestampFechaInicio = Timestamp.from(localDateFechaInicio.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-            System.out.println("Fecha Inicio: " +timestampFechaInicio);
+            System.out.println("Se comienza a extrar datos del pdf para la fecha: " +timestampFechaInicio);
 
             String anoHidrologico = obtenerAnoHidrologico(localDateFechaInicio);
 
@@ -336,6 +336,7 @@ public class HistoricoPrecipitacionesService {
         }
 
         historicoPrecipitacionesRepository.saveAll(historicoPrecipitacionesList);
+        System.out.println("Valores Insertados en tabla Historico Precipitaciones");
     }
 
     private String obtenerAnoHidrologico(LocalDate localDateFechaInicio) {
@@ -381,7 +382,6 @@ public class HistoricoPrecipitacionesService {
             try {
                 Double valor = Double.parseDouble(valorStr.replace(",", "."));
                 resultados.put(indicativoBD, valor);
-                System.out.println("Válido: " + indicativoPDF + " -> " + indicativoBD + " | Valor: " + valor);
             } catch (NumberFormatException e) {
                 // Error de parseo, se ignora
             }
