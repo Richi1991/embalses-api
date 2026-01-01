@@ -3,6 +3,7 @@ package com.app.core.repository;
 import com.app.core.model.HistoricoPrecipitaciones;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
@@ -13,5 +14,18 @@ public interface HistoricoPrecipitacionesRepository extends JpaRepository<Histor
 
     @Query(value= "SELECT * FROM historico_precipitaciones WHERE fecha_registro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true )
     List<HistoricoPrecipitaciones> getValoresHistoricoPrecipitacionesBetweenTwoDates(Timestamp fechaInicio, Timestamp fechaFin);
+
+    @Query(value = "SELECT " +
+            "est.indicativo, " +
+            "est.nombre, " +
+            "ROUND(SUM(hist.valor_24h)::numeric, 1) as valor_acumulado, " +
+            "ST_X(est.geom::geometry) as lng, " +
+            "ST_Y(est.geom::geometry) as lat " +
+            "FROM historico_precipitaciones hist " +
+            "JOIN estaciones_meteorologicas est ON hist.indicativo = est.indicativo " +
+            "WHERE hist.fecha_registro >= CURRENT_DATE - CAST(:periodo AS interval) " +
+            "GROUP BY est.indicativo, est.nombre, est.geom " +
+            "ORDER BY valor_acumulado DESC", nativeQuery = true)
+    List<AcumuladoEstacion> findAcumuladosDinamicos(@Param("periodo") String periodo);
 }
 

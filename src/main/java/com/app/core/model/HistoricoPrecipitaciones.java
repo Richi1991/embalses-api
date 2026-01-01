@@ -39,6 +39,10 @@ public class HistoricoPrecipitaciones {
     @Column(name = "tmed")
     private Double tmed;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "indicativo", referencedColumnName = "indicativo", insertable = false, updatable = false)
+    private EstacionesMeteorologicas estacionesMeteorologicas;
+
     public Integer getId() {
         return id;
     }
@@ -101,5 +105,13 @@ public class HistoricoPrecipitaciones {
 
     public void setTmed(Double tmed) {
         this.tmed = tmed;
+    }
+
+    public EstacionesMeteorologicas getEstacionesMeteorologicas() {
+        return estacionesMeteorologicas;
+    }
+
+    public void setEstacionesMeteorologicas(EstacionesMeteorologicas estacionesMeteorologicas) {
+        this.estacionesMeteorologicas = estacionesMeteorologicas;
     }
 }

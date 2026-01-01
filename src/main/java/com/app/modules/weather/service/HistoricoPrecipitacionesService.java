@@ -5,6 +5,7 @@ import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.core.model.EstacionesMeteorologicas;
 import com.app.core.model.HistoricoPrecipitaciones;
+import com.app.core.repository.AcumuladoEstacion;
 import com.app.core.repository.EstacionesMeteorologicasRepository;
 import com.app.core.repository.HistoricoPrecipitacionesRepository;
 import com.app.core.repository.MapaPrecipitacionRepository;
@@ -424,6 +425,12 @@ public class HistoricoPrecipitacionesService {
         Timestamp fechaFinTimestamp = fechaStringToTimestamp(fechaFin);
 
         return historicoPrecipitacionesRepository.getValoresHistoricoPrecipitacionesBetweenTwoDates(fechaInicioTimestamp, fechaFinTimestamp);
+    }
+
+
+    public List<AcumuladoEstacion> obtenerValoresPrecipitacionesAcumulados(String rango) {
+
+        return historicoPrecipitacionesRepository.findAcumuladosDinamicos(rango);
     }
 
     public Timestamp fechaStringToTimestamp(String fechaStr) {
