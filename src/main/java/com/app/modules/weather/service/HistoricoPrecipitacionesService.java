@@ -31,6 +31,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -409,5 +410,24 @@ public class HistoricoPrecipitacionesService {
         javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
         sc.init(null, trustAllCerts, new java.security.SecureRandom());
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
+
+    public List<HistoricoPrecipitaciones> obtenerValoresHistoricoPrecipitaciones(String fechaInicio, String fechaFin) {
+
+        Timestamp fechaInicioTimestamp = fechaStringToTimestamp(fechaInicio);
+        Timestamp fechaFinTimestamp = fechaStringToTimestamp(fechaFin);
+
+        return historicoPrecipitacionesRepository.getValoresHistoricoPrecipitacionesBetweenTwoDates(fechaInicioTimestamp, fechaFinTimestamp);
+    }
+
+    public Timestamp fechaStringToTimestamp(String fechaStr) {
+        // 1. Definimos el formato de 8 dígitos que recibes
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        // 2. Parseamos como LocalDate (esto NO fallará porque solo busca la fecha)
+        LocalDate fecha = LocalDate.parse(fechaStr, formatter);
+
+        // 3. Convertimos a Timestamp asignando las 00:00:00 horas
+        return Timestamp.valueOf(fecha.atStartOfDay());
     }
 }

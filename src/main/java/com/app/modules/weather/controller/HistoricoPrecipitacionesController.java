@@ -1,6 +1,7 @@
 package com.app.modules.weather.controller;
 
 import com.app.core.exceptions.FunctionalExceptions;
+import com.app.core.model.HistoricoPrecipitaciones;
 import com.app.modules.weather.service.HistoricoPrecipitacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/weather/historicoprecipitaciones")
@@ -33,5 +35,10 @@ public class HistoricoPrecipitacionesController {
     public void insertHistoricoPrecipitacionesChs(@PathVariable(value= "fechaInicio") String fechaInicio,
                                                   @PathVariable(value= "fechaFin") String fechaFin) throws FunctionalExceptions {
         historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(fechaInicio, fechaFin);
+    }
+
+    @GetMapping("/obtener_valores_historico_precipitaciones/{fechaInicio}/{fechaFin}")
+    public List<HistoricoPrecipitaciones> obtenerValoresHistoricoPrecipitaciones(@PathVariable(value ="fechaInicio") String fechaInicio, @PathVariable(value="fechaFin") String fechaFin) {
+        return historicoPrecipitacionesService.obtenerValoresHistoricoPrecipitaciones(fechaInicio, fechaFin);
     }
 }
