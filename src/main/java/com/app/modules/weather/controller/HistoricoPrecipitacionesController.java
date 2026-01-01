@@ -2,9 +2,11 @@ package com.app.modules.weather.controller;
 
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.core.model.HistoricoPrecipitaciones;
+import com.app.modules.hidrology.dto.PrecipitacionMapaDTO;
 import com.app.modules.weather.service.HistoricoPrecipitacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -40,5 +42,10 @@ public class HistoricoPrecipitacionesController {
     @GetMapping("/obtener_valores_historico_precipitaciones/{fechaInicio}/{fechaFin}")
     public List<HistoricoPrecipitaciones> obtenerValoresHistoricoPrecipitaciones(@PathVariable(value ="fechaInicio") String fechaInicio, @PathVariable(value="fechaFin") String fechaFin) {
         return historicoPrecipitacionesService.obtenerValoresHistoricoPrecipitaciones(fechaInicio, fechaFin);
+    }
+
+    @GetMapping("/obtener_datos_mapa_precipitaciones/{rango}")
+    public ResponseEntity<List<PrecipitacionMapaDTO>> obtenerDatosMapaPrecipitaciones(@PathVariable(value ="rango") String rango) {
+        return ResponseEntity.ok(historicoPrecipitacionesService.getDatosMapa(rango));
     }
 }

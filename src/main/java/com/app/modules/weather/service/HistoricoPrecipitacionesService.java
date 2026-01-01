@@ -7,6 +7,8 @@ import com.app.core.model.EstacionesMeteorologicas;
 import com.app.core.model.HistoricoPrecipitaciones;
 import com.app.core.repository.EstacionesMeteorologicasRepository;
 import com.app.core.repository.HistoricoPrecipitacionesRepository;
+import com.app.core.repository.MapaPrecipitacionRepository;
+import com.app.modules.hidrology.dto.PrecipitacionMapaDTO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import com.app.modules.weather.dto.TemperaturasDTO;
@@ -32,6 +34,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,6 +52,9 @@ public class HistoricoPrecipitacionesService {
 
     @Autowired
     private EstacionesMeteorologicasRepository estacionesMeteorologicasRepository;
+
+    @Autowired
+    private MapaPrecipitacionRepository repo;
 
     public HistoricoPrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
         this.configureSSL();
@@ -429,5 +435,24 @@ public class HistoricoPrecipitacionesService {
 
         // 3. Convertimos a Timestamp asignando las 00:00:00 horas
         return Timestamp.valueOf(fecha.atStartOfDay());
+    }
+
+
+
+    public List<PrecipitacionMapaDTO> getDatosMapa(String rango) {
+        OffsetDateTime fin = OffsetDateTime.now();
+        OffsetDateTime inicio;
+
+        switch (rango) {
+            case "semana": inicio = fin.minusWeeks(1); break;
+            case "mes": inicio = fin.minusMonths(1); break;
+            case "hidrologico":
+                int year = (fin.getMonthValue() >= 10) ? fin.getYear() : fin.getYear() - 1;
+                inicio = OffsetDateTime.of(year, 10, 1, 0, 0, 0, 0, fin.getOffset());
+                break;
+            default: inicio = fin.minusDays(1); // Por defecto último día
+        }
+
+        return repo.obtenerMapaPrecipitacion(inicio, fin);
     }
 }
