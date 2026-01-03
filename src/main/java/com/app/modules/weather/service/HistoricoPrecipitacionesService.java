@@ -18,6 +18,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -266,15 +267,9 @@ public class HistoricoPrecipitacionesService {
         }
     }
 
-    public void insertarHistoricoPrecipitacionesChs(String fechaInicio, String fechaFin) throws FunctionalExceptions {
+    public void insertarHistoricoPrecipitacionesChs(LocalDate localDateFechaInicio, LocalDate localDateFechaFin) throws FunctionalExceptions {
 
         OkHttpClient client = new OkHttpClient();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-        LocalDate localDateFechaInicio = LocalDate.parse(fechaInicio,formatter);
-
-        LocalDate localDateFechaFin = LocalDate.parse(fechaFin,formatter);
 
         // Definimos el formateador una sola vez fuera del bucle para mejor rendimiento
         DateTimeFormatter fmtCompacto = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -345,6 +340,10 @@ public class HistoricoPrecipitacionesService {
 
         historicoPrecipitacionesRepository.saveAll(historicoPrecipitacionesList);
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");
+    }
+
+    public LocalDate parseStringToLocalDate(String fecha, DateTimeFormatter formatter) {
+        return LocalDate.parse(fecha, formatter);
     }
 
     private String obtenerAnoHidrologico(LocalDate localDateFechaInicio) {
@@ -438,7 +437,7 @@ public class HistoricoPrecipitacionesService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
         // 2. Parseamos como LocalDate (esto NO fallará porque solo busca la fecha)
-        LocalDate fecha = LocalDate.parse(fechaStr, formatter);
+        LocalDate fecha = parseStringToLocalDate(fechaStr, formatter);
 
         // 3. Convertimos a Timestamp asignando las 00:00:00 horas
         return Timestamp.valueOf(fecha.atStartOfDay());

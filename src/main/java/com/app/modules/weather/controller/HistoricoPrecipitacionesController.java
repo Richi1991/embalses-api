@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -37,7 +39,36 @@ public class HistoricoPrecipitacionesController {
     @GetMapping("/insertar_historico_precipitaciones_chs/{fechaInicio}/{fechaFin}")
     public void insertHistoricoPrecipitacionesChs(@PathVariable(value= "fechaInicio") String fechaInicio,
                                                   @PathVariable(value= "fechaFin") String fechaFin) throws FunctionalExceptions {
-        historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(fechaInicio, fechaFin);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+        LocalDate localDateFechaInicio = historicoPrecipitacionesService.parseStringToLocalDate(fechaInicio, formatter);
+
+        LocalDate localDateFechaFin = historicoPrecipitacionesService.parseStringToLocalDate(fechaFin, formatter);
+
+        historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(localDateFechaInicio, localDateFechaFin);
+    }
+
+    /**
+     * fechaInicio ej. 20251201
+     * fechaFin ej. 20251225
+     */
+    @GetMapping("/insertar_historico_precipitaciones_chs_job/{days}")
+    public ResponseEntity<String> insertHistoricoPrecipitacionesChs(@PathVariable(value= "days") int days) throws RuntimeException {
+
+        LocalDate localDateFechaFin = LocalDate.now();
+
+        LocalDate localDateFechaInicio = localDateFechaFin.minusDays(days);
+
+        new Thread(() -> {
+            try {
+                historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChs(localDateFechaInicio, localDateFechaFin);
+            } catch (FunctionalExceptions e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        return ResponseEntity.ok("Insercción historico precipitaciones chs iniciada en background");
     }
 
     @GetMapping("/obtener_valores_historico_precipitaciones/{fechaInicio}/{fechaFin}")
