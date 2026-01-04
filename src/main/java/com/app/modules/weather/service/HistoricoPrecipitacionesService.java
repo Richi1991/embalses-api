@@ -83,7 +83,9 @@ public class HistoricoPrecipitacionesService {
                     if (response.isSuccessful() && response.body() != null) {
                         String jsonData = response.body().string();
                         JsonNode node = new ObjectMapper().readTree(jsonData);
-                        newUrl = node.get("datos").asText();
+                        if (node.get("datos").asText() != null) {
+                            newUrl = node.get("datos").asText();
+                        }
                         if (newUrl != null) {
                             Request requestUrlDatosClimaEstacion = new Request.Builder()
                                     .url(newUrl)
@@ -99,7 +101,7 @@ public class HistoricoPrecipitacionesService {
                                     JsonNode rootNode = mapper.readTree(jsonDatosClimaEstacion);
 
                                     for (JsonNode nodo : rootNode) {
-                                        if (nodo.path("nombre").asText().equals("MURCIA")) {
+                                        if (nodo.path("nombre").asText() != null) {
                                             System.out.println("Procesando nodo: " + nodo.path("indicativo").asText() + " fecha: " + nodo.path("fecha").asText());
 
                                             try {
@@ -138,10 +140,11 @@ public class HistoricoPrecipitacionesService {
 
                                     }
                                 } else {
-                                    System.out.println("No ha obtenido datos:" +responseDatosClimaEstacion.body());
+                                    System.out.println("No se han obtenido datos:" +responseDatosClimaEstacion.body());
                                 }
                             }catch (IOException e) {
-                                throw new RuntimeException(e);
+                                System.out.println("Error en la response DatosClimaEstacion:" + requestUrlDatosClimaEstacion.body());
+
                             }
                         }
 
@@ -149,7 +152,7 @@ public class HistoricoPrecipitacionesService {
                         System.out.println("No se han obtenido datos:" +response.body());
                     }
                 }catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.out.println("Error en la response:" + request.body());
                 }
             }  catch (Exception e) {
                 Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
@@ -176,8 +179,12 @@ public class HistoricoPrecipitacionesService {
 
 
         String sql = "INSERT INTO historico_precipitaciones (indicativo, nombre, valor_24h, fecha_registro, tmax, tmin, tmed) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT (indicativo, fecha_registro) DO NOTHING";
+                " VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                " ON CONFLICT (indicativo, fecha_registro) DO UPDATE SET " +
+                " valor_24h = EXCLUDED.valor_24h, " +
+                " tmax = EXCLUDED.tmax, " +
+                " tmin = EXCLUDED.tmin, " +
+                " tmed = EXCLUDED.tmed";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override

@@ -10,9 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -28,8 +27,29 @@ public class HistoricoPrecipitacionesController {
     private String apiKeyAemet;
 
     @PostMapping("/insert_historico_precipitaciones_aemet/{provincia}/{fechaInicio}/{fechaFin}")
-    public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws IOException, FunctionalExceptions, SQLException {
+    public void insertHistoricoPrecipitacionesAemet(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "fechaInicio") String fechaInicio, @PathVariable(value = "fechaFin") String fechaFin) throws FunctionalExceptions {
         historicoPrecipitacionesService.insertarHistoricoPrecipitacionesAemet(provincia, apiKeyAemet, fechaInicio, fechaFin);
+    }
+
+    @PostMapping("/insert_historico_precipitaciones_aemet_job/{provincia}/{days}")
+    public ResponseEntity<String> insertHistoricoPrecipitacionesAemetJob(@PathVariable(value = "provincia") String provincia, @PathVariable(value = "days") int days) throws FunctionalExceptions {
+
+        OffsetDateTime OffsetDateTimefechaFin = OffsetDateTime.now();
+        OffsetDateTime OffsetDateTimefechaInicio = OffsetDateTime.now().minusDays(days);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'UTC'");
+
+        String fechaFin = OffsetDateTimefechaFin.format(formatter);
+        String fechaInicio = OffsetDateTimefechaInicio.format(formatter);
+
+        new Thread(() -> {
+            try {
+                historicoPrecipitacionesService.insertarHistoricoPrecipitacionesAemet(provincia, apiKeyAemet, fechaInicio, fechaFin);
+            } catch (FunctionalExceptions e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        return ResponseEntity.ok("Respuesta correcta");
     }
 
     /**
