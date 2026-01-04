@@ -155,7 +155,7 @@ public class HistoricoPrecipitacionesService {
                     System.out.println("Error en la response:" + request.body());
                 }
             }  catch (Exception e) {
-                Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
+                System.out.println("No hay datos para la estacion:" + estacionesDTO.getNombre());
             }
         }
         System.out.println("estacionesDTOListToInsert: "+estacionesDTOListToInsert);
