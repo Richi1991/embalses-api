@@ -178,6 +178,12 @@ public class HistoricoPrecipitacionesService {
                 }).toList();
 
 
+        insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
+
+        System.out.println("Guardado de datos realizado correctamente en Tabla HistoricoPrecipitaciones");
+    }
+
+    private void insertarHistoricoPrecipitacionesList(List<HistoricoPrecipitaciones> historicoPrecipitacionesList) {
         String sql = "INSERT INTO historico_precipitaciones (indicativo, nombre, valor_24h, fecha_registro, tmax, tmin, tmed) " +
                 " VALUES (?, ?, ?, ?, ?, ?, ?) " +
                 " ON CONFLICT (indicativo, fecha_registro) DO UPDATE SET " +
@@ -204,8 +210,6 @@ public class HistoricoPrecipitacionesService {
                 return historicoPrecipitacionesList.size();
             }
         });
-
-        System.out.println("Guardado de datos realizado correctamente en Tabla HistoricoPrecipitaciones");
     }
 
     private List<EstacionesDTO> obtenerEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
@@ -345,7 +349,7 @@ public class HistoricoPrecipitacionesService {
             localDateFechaInicio = localDateFechaInicio.plusDays(1);
         }
 
-        historicoPrecipitacionesRepository.saveAll(historicoPrecipitacionesList);
+        this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");
     }
 

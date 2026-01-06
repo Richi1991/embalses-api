@@ -74,7 +74,7 @@ public class HistoricoPrecipitacionesController {
      * fechaFin ej. 20251225
      */
     @GetMapping("/insertar_historico_precipitaciones_chs_job/{days}")
-    public ResponseEntity<String> insertHistoricoPrecipitacionesChs(@PathVariable(value= "days") int days) throws RuntimeException {
+    public ResponseEntity<String> insertHistoricoPrecipitacionesChsJob(@PathVariable(value= "days") int days) throws RuntimeException {
 
         LocalDate localDateFechaFin = LocalDate.now();
 

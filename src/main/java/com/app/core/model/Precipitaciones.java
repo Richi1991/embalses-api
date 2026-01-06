@@ -35,21 +35,6 @@ public class Precipitaciones {
     @Column(name = "precipitacion_24h")
     private Double precipitacion24h;
 
-    @Column(name = "precipitacion_48h")
-    private Double precipitacion48h;
-
-    @Column(name = "precipitacion_7d")
-    private Double precipitacion7d;
-
-    @Column(name = "precipitacion_30d")
-    private Double precipitacion30d;
-
-    @Column(name = "precipitacion_hidrologic_year")
-    private Double precipitacionHidrologicYear;
-
-    @Column(name = "precipitacion_ytd")
-    private Double precipitacionYtd;
-
     @ManyToOne
     @JoinColumn(name = "indicativo", referencedColumnName = "indicativo", insertable = false, updatable = false)
     private EstacionesMeteorologicas estacion;
@@ -108,46 +93,6 @@ public class Precipitaciones {
 
     public void setPrecipitacion24h(Double precipitacion24h) {
         this.precipitacion24h = precipitacion24h;
-    }
-
-    public Double getPrecipitacion48h() {
-        return precipitacion48h;
-    }
-
-    public void setPrecipitacion48h(Double precipitacion48h) {
-        this.precipitacion48h = precipitacion48h;
-    }
-
-    public Double getPrecipitacion7d() {
-        return precipitacion7d;
-    }
-
-    public void setPrecipitacion7d(Double precipitacion7d) {
-        this.precipitacion7d = precipitacion7d;
-    }
-
-    public Double getPrecipitacion30d() {
-        return precipitacion30d;
-    }
-
-    public void setPrecipitacion30d(Double precipitacion30d) {
-        this.precipitacion30d = precipitacion30d;
-    }
-
-    public Double getPrecipitacionHidrologicYear() {
-        return precipitacionHidrologicYear;
-    }
-
-    public void setPrecipitacionHidrologicYear(Double precipitacionHidrologicYear) {
-        this.precipitacionHidrologicYear = precipitacionHidrologicYear;
-    }
-
-    public Double getPrecipitacionYtd() {
-        return precipitacionYtd;
-    }
-
-    public void setPrecipitacionYtd(Double precipitacionYtd) {
-        this.precipitacionYtd = precipitacionYtd;
     }
 
     public EstacionesMeteorologicas getEstacion() {
