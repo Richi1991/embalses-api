@@ -52,6 +52,7 @@ public class HistoricoPrecipitacionesController {
         return ResponseEntity.ok("Respuesta correcta");
     }
 
+
     /**
      * fechaInicio ej. 20251201
      * fechaFin ej. 20251225
@@ -89,6 +90,21 @@ public class HistoricoPrecipitacionesController {
         }).start();
 
         return ResponseEntity.ok("Insercción historico precipitaciones chs iniciada en background");
+    }
+
+    /**
+     * fechaInicio ej. 20251201
+     * fechaFin ej. 20251225
+     */
+    @GetMapping("/insertar_historico_precipitaciones_chs_job_from_precipitaciones/{days}")
+    public ResponseEntity<String> insertHistoricoPrecipitacionesChsJobFromPrecipitaciones(@PathVariable(value= "days") int days) throws RuntimeException {
+
+
+        new Thread(() -> {
+            historicoPrecipitacionesService.insertarHistoricoPrecipitacionesChsFromPrecipitaciones(days);
+        }).start();
+
+        return ResponseEntity.ok("Insercción historico precipitaciones chs from precipitaciones iniciada en background");
     }
 
     @GetMapping("/obtener_valores_historico_precipitaciones/{fechaInicio}/{fechaFin}")

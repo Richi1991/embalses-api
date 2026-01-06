@@ -43,6 +43,15 @@ public class HistoricoPrecipitaciones {
     @JoinColumn(name = "indicativo", referencedColumnName = "indicativo", insertable = false, updatable = false)
     private EstacionesMeteorologicas estacionesMeteorologicas;
 
+    public HistoricoPrecipitaciones(Timestamp fechaRegistro, String nombre, String indicativo, Double valor24h) {
+        this.fechaRegistro = fechaRegistro;
+        this.nombre = nombre;
+        this.indicativo = indicativo;
+        this.valor24h = valor24h;
+    }
+
+    public HistoricoPrecipitaciones() {}
+
     public Integer getId() {
         return id;
     }

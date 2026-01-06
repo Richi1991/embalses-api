@@ -5,10 +5,9 @@ import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.core.model.EstacionesMeteorologicas;
 import com.app.core.model.HistoricoPrecipitaciones;
-import com.app.core.repository.AcumuladoEstacion;
-import com.app.core.repository.EstacionesMeteorologicasRepository;
-import com.app.core.repository.HistoricoPrecipitacionesRepository;
-import com.app.core.repository.MapaPrecipitacionRepository;
+import com.app.core.model.PrecipitacionLastDays;
+import com.app.core.model.Precipitaciones;
+import com.app.core.repository.*;
 import com.app.modules.hidrology.dto.PrecipitacionMapaDTO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
@@ -57,6 +56,9 @@ public class HistoricoPrecipitacionesService {
 
     @Autowired
     private MapaPrecipitacionRepository repo;
+
+    @Autowired
+    private PrecipitacionesRepository precipitacionesRepository;
 
     public HistoricoPrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
         this.configureSSL();
@@ -471,5 +473,22 @@ public class HistoricoPrecipitacionesService {
         }
 
         return repo.obtenerMapaPrecipitacion(inicio, fin);
+    }
+
+    public void insertarHistoricoPrecipitacionesChsFromPrecipitaciones(int days) {
+
+        List<PrecipitacionLastDays> precipitacionesList = precipitacionesRepository.findPrecipitacionesLastDays(days);
+
+        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = precipitacionesList.stream()
+                .map(prec -> new HistoricoPrecipitaciones(
+                        java.sql.Timestamp.valueOf(prec.getFechaActualizacion()),
+                        prec.getNombre(),
+                        prec.getIndicativo(),
+                        prec.getMaximo24h()
+                ))
+                .toList();
+
+        this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
+        System.out.println("Valores Insertados en tabla Historico Precipitaciones");
     }
 }
