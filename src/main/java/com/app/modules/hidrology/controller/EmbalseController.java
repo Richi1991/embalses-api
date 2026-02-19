@@ -33,14 +33,6 @@ public class EmbalseController {
      */
     @GetMapping("/top-movimientos")
     public List<EmbalseDTO> getTopMovimientos(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
-        try {
-            // 1. Ejecuta el scraping y guarda los nuevos datos en Neon
-            embalseService.obtenerAndActualizarDatosDeLaWeb();
-
-        } catch (Exception e) {
-            Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
-        }
-        // 2. Recupera el listado final con la variación real (calculada por SQL LAG)
         return embalseService.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo);
     }
 

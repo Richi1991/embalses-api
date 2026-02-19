@@ -39,7 +39,7 @@ public class EstacionesService {
         estacionesDAO.insertarEstacionesAemetFilterByProvincia(estacionesAemetDTOListFilterByProvincia);
     }
 
-    private List<EstacionesDTO> obtenerEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
+    public List<EstacionesDTO> obtenerEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
         OkHttpClient client = new OkHttpClient();
         List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia = new ArrayList<>();
         String newUrl = null;

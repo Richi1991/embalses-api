@@ -34,10 +34,20 @@ public class EstacionesDTO {
     private PrecipitacionesDTO precipitacionesDTO;
     private TemperaturasDTO temperaturasDTO;
 
+    private Double precipitacion24h;
+
     public EstacionesDTO() {
     }
 
     public EstacionesDTO(String latitud, String provincia, long altitud, String indicativo, String nombre, String indsinop, String longitud, String redOrigen) {
+    }
+
+    public void setPrecipitacion24h(Double precipitacion24h) {
+        this.precipitacion24h = precipitacion24h;
+    }
+
+    public Double getPrecipitacion24h() {
+        return precipitacion24h;
     }
 
     public String getLatitud() {

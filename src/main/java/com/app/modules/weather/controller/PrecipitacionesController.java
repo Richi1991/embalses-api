@@ -23,6 +23,9 @@ public class PrecipitacionesController {
     @Value("${CRON_JOB_KEY}")
     private String cronKey;
 
+    @Value("${API_KEY_AEMET}")
+    private String apiKeyAemet;
+
     @GetMapping("/insert_precipitaciones_last_value")
     public ResponseEntity<String> extraerAndGuardarPrecipitacionesRealTime() {
         new Thread(() -> precipitacionesService.getAndSavePrecipitacionesRealTime()).start();
@@ -36,11 +39,16 @@ public class PrecipitacionesController {
         List<EstacionesDTO> estacionesDTOWithPrecipitacionesList = new ArrayList<>();
 
         try {
-            estacionesDTOWithPrecipitacionesList = precipitacionesService.extraerPrecipitacionesRealTime();
+            estacionesDTOWithPrecipitacionesList = precipitacionesService.obtenerMapaRapido();
         } catch (Exception e) {
             Exceptions.EMB_E_0006.lanzarExcepcionCausada(e);
         }
         return estacionesDTOWithPrecipitacionesList;
+    }
+
+    @GetMapping("/get_values_of_today_aemet/{provincia}")
+    public void getValuesOfTodayAemetByProvincia(@PathVariable (value= "provincia") String provincia) throws FunctionalExceptions {
+        precipitacionesService.getValuesOfTodayAemetByProvincia(provincia, apiKeyAemet);
     }
 
 }

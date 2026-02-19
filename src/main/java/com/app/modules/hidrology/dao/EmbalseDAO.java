@@ -7,18 +7,28 @@ import com.app.modules.hidrology.dto.EmbalseDTO;
 import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
+import org.jooq.DSLContext;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.app.core.jooq.generated.Tables.EMBALSES;
+import static com.app.core.jooq.generated.Tables.LECTURAS_EMBALSES;
+import static org.jooq.impl.DSL.*;
+
 @Repository
 public class EmbalseDAO {
+
+    @Autowired
+    private DSLContext dsl;
 
     public double obtenerHm3AnteriorYActualizar(String nombre, double hm3Actual) throws SQLException {
         double hm3Anterior = hm3Actual; // Por defecto 0 variación si es nuevo
@@ -117,6 +127,55 @@ public class EmbalseDAO {
             }
         }
         return lista;
+    }
+
+    public List<EmbalseDTO> obtenerUltimasLecturasConVariacionPorIntervaloWrong(String intervalo) {
+
+        // 1. Lectura Actual
+        var lecturaActual = select(
+                LECTURAS_EMBALSES.EMBALSE_ID,
+                LECTURAS_EMBALSES.HM3_ACTUAL,
+                LECTURAS_EMBALSES.PORCENTAJE,
+                LECTURAS_EMBALSES.FECHA_REGISTRO,
+                rowNumber().over(partitionBy(LECTURAS_EMBALSES.EMBALSE_ID).orderBy(LECTURAS_EMBALSES.FECHA_REGISTRO.desc())).as("rn")
+        )
+                .from(LECTURAS_EMBALSES)
+                .asTable("curr");
+
+        // 2. Lectura Pasada
+        var lecturaPasada = select(
+                LECTURAS_EMBALSES.EMBALSE_ID,
+                LECTURAS_EMBALSES.HM3_ACTUAL,
+                rowNumber().over(partitionBy(LECTURAS_EMBALSES.EMBALSE_ID).orderBy(LECTURAS_EMBALSES.FECHA_REGISTRO.desc())).as("rn")
+        )
+                .from(LECTURAS_EMBALSES)
+                .where(LECTURAS_EMBALSES.FECHA_REGISTRO.le(field("NOW() - CAST({0} AS INTERVAL)", LocalDateTime.class, intervalo)))
+                .asTable("prev");
+
+        // 3. Consulta Final con ALIAS COINCIDENTES con el Record
+        return dsl.select(
+                        EMBALSES.ID.as("idEmbalse"), // Coincide con Record
+                        EMBALSES.NOMBRE.as("nombre"), // Coincide con Record
+                        lecturaActual.field(LECTURAS_EMBALSES.HM3_ACTUAL).coerce(Double.class).as("hm3"), // Coincide con Record
+                        lecturaActual.field(LECTURAS_EMBALSES.PORCENTAJE).coerce(Double.class).as("porcentaje"), // Coincide con Record
+                        EMBALSES.CAPACIDAD_MAXIMA.as("capacidadMaximaEmbalse"), // Coincide con Record
+
+                        // Calculamos la variación y la renombramos
+                        lecturaActual.field(LECTURAS_EMBALSES.HM3_ACTUAL)
+                                .minus(coalesce(lecturaPasada.field(LECTURAS_EMBALSES.HM3_ACTUAL), lecturaActual.field(LECTURAS_EMBALSES.HM3_ACTUAL)))
+                                .coerce(Double.class)
+                                .as("variacion"), // Coincide con Record
+
+                        // Valor por defecto para Tendencia (se puede calcular en el Record o Front)
+                        val(TendenciaEnum.ESTABLE.name()).as("tendencia"),
+
+                        lecturaActual.field(LECTURAS_EMBALSES.FECHA_REGISTRO).as("fechaRegistro") // Coincide con Record
+                )
+                .from(EMBALSES)
+                .join(lecturaActual).on(EMBALSES.ID.eq(lecturaActual.field(LECTURAS_EMBALSES.EMBALSE_ID)))
+                .leftJoin(lecturaPasada).on(EMBALSES.ID.eq(lecturaPasada.field(LECTURAS_EMBALSES.EMBALSE_ID)))
+                .where(lecturaActual.field("rn", Integer.class).eq(1))
+                .fetchInto(EmbalseDTO.class);
     }
 
     public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc, String nombreTabla) throws SQLException {

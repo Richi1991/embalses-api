@@ -1,10 +1,14 @@
 package com.app.modules.weather.service;
 
+import com.app.core.exceptions.FunctionalExceptions;
+import com.app.core.jooq.generated.tables.EstacionesMeteorologicas;
 import com.app.core.model.Precipitaciones;
 import com.app.core.repository.PrecipitacionesRepository;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import okhttp3.OkHttpClient;
+import org.jooq.DSLContext;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,11 +27,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.app.core.jooq.generated.Tables.ESTACIONES_METEOROLOGICAS;
+import static com.app.core.jooq.generated.Tables.PRECIPITACIONES;
+
 @Service
 public class PrecipitacionesService {
 
     @Autowired
     private PrecipitacionesRepository precipitacionesRepository;
+
+    @Autowired
+    private EstacionesService estacionesService;
+
+    @Autowired
+    private DSLContext dsl;
 
     private double limpiarValor(String valor) {
         try {
@@ -38,37 +51,22 @@ public class PrecipitacionesService {
         }
     }
 
-    public List<EstacionesDTO> extraerPrecipitacionesRealTime() {
-        // 1. Usamos el repository en lugar del DAO
-        List<Precipitaciones> ultimasPrecipitaciones = precipitacionesRepository.findLatestPrecipitacionesForEachEstacion();
-
-        // 2. Transformamos las entidades a DTOs
-        return ultimasPrecipitaciones.stream().map(p -> {
-            EstacionesDTO dto = new EstacionesDTO();
-
-            // 2. Datos de la Estación (Vienen a través de la relación ManyToOne)
-            // JPA hace p.getEstacion() de forma eficiente
-            if (p.getEstacion() != null) {
-                dto.setIndicativo(p.getEstacion().getIndicativo());
-                dto.setNombre(p.getEstacion().getNombre());
-                dto.setLatitud(p.getEstacion().getLatitud());
-                dto.setLongitud(p.getEstacion().getLongitud());
-                dto.setGeom(p.getEstacion().getGeom() != null ? p.getEstacion().getGeom().toString() : null);
-                dto.setProvincia(p.getEstacion().getProvincia());
-            }
-
-            dto.setFechaActualizacion(p.getId().getFechaActualizacion());
-
-            PrecipitacionesDTO pDto = new PrecipitacionesDTO();
-            pDto.setPrecipitacion1h(p.getPrecipitacion1h());
-            pDto.setPrecipitacion3h(p.getPrecipitacion3h());
-            pDto.setPrecipitacion6h(p.getPrecipitacion6h());
-            pDto.setPrecipitacion12h(p.getPrecipitacion12h());
-            pDto.setPrecipitacion24h(p.getPrecipitacion24h());
-
-            dto.setPrecipitacionesDTO(pDto);
-            return dto;
-        }).collect(Collectors.toList());
+    public List<EstacionesDTO> obtenerMapaRapido() {
+        return dsl.select(
+                        // Seleccionamos los campos de la tabla generada por jOOQ
+                        ESTACIONES_METEOROLOGICAS.NOMBRE,
+                        ESTACIONES_METEOROLOGICAS.INDICATIVO,
+                        ESTACIONES_METEOROLOGICAS.LATITUD,
+                        ESTACIONES_METEOROLOGICAS.LONGITUD,
+                        PRECIPITACIONES.PRECIPITACION_24H,
+                        PRECIPITACIONES.FECHA_ACTUALIZACION
+                )
+                .distinctOn(ESTACIONES_METEOROLOGICAS.INDICATIVO) // Si falla, usa dsl.selectDistinctOn(...)
+                .from(ESTACIONES_METEOROLOGICAS)
+                .leftJoin(PRECIPITACIONES)
+                .on(ESTACIONES_METEOROLOGICAS.INDICATIVO.eq(PRECIPITACIONES.INDICATIVO))
+                .orderBy(ESTACIONES_METEOROLOGICAS.INDICATIVO, PRECIPITACIONES.FECHA_ACTUALIZACION.desc())
+                .fetchInto(EstacionesDTO.class);
     }
 
     public WebDriver createDriver() {
@@ -199,4 +197,12 @@ public class PrecipitacionesService {
         System.out.println("Lote de " + entidades.size() + " registros guardado con éxito.");
     }
 
+    public void getValuesOfTodayAemetByProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
+
+        List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia = estacionesService.obtenerEstacionesAemetPorProvincia(provincia, apiKeyAemet);
+
+        OkHttpClient client = new OkHttpClient();
+
+
+    }
 }

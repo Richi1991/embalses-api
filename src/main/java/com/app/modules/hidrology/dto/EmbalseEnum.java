@@ -1,5 +1,7 @@
 package com.app.modules.hidrology.dto;
 
+import java.util.Arrays;
+
 public enum EmbalseEnum {
 
     FUENSANTA(1, "FUENSANTA"),
@@ -35,6 +37,17 @@ public enum EmbalseEnum {
     EmbalseEnum(Integer codigoEmbalse, String nombreEmbalse) {
         this.codigoEmbalse = codigoEmbalse;
         this.nombreEmbalse = nombreEmbalse;
+    }
+
+    public static int resolverId(String nombreWeb) {
+        String nombreLimpio = nombreWeb.toUpperCase().trim();
+
+        return Arrays.stream(EmbalseEnum.values())
+                .filter(e -> nombreLimpio.contains(e.nombreEmbalse.toUpperCase())
+                        || e.nombreEmbalse.toUpperCase().contains(nombreLimpio))
+                .map(e -> e.codigoEmbalse)
+                .findFirst()
+                .orElse(0); // Devolvemos 0 si no hay match para que el 'continue' del service funcione
     }
 
     public Integer getCodigoEmbalse() {
