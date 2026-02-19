@@ -12,7 +12,10 @@
 .settings/
 .vscode/
 
+
+
 # Configuración sensible (¡Crucial!)
+/jooq-codegen.properties/
 src/main/resources/application.properties
 .env
 

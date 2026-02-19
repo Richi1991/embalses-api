@@ -45,41 +45,6 @@ public class EmbalseService {
 
     public record LecturaProcesada(int id, double hm3, double porc, double variacion, String tendencia) {}
 
-    public void obtenerAndActualizarDatosDeLaWebOld() throws FunctionalExceptions {
-        try {
-            Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
-            String todoElTexto = doc.body().text();
-
-            // Este patrón busca: "E.Nombre (Cota) H Hm3 %"
-            // Ejemplo: E.Fuensanta (67,92) 34,69 29,184 13,9
-            Pattern p = Pattern.compile("E\\.([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+)\\s\\([^\\)]+\\)\\s[0-9,.]+\\s([0-9,.]+)\\s([0-9,.]+)");
-            Matcher m = p.matcher(todoElTexto);
-
-                while (m.find()) {
-                    String nombreEmbalseObtenido = m.group(1).trim().toUpperCase();
-
-                    int idEmbalse = Arrays.stream(EmbalseEnum.values()).filter(x -> x.getNombreEmbalse().contains(nombreEmbalseObtenido))
-                            .map(EmbalseEnum::getCodigoEmbalse).findFirst().orElseThrow(() -> new RuntimeException("No se encontró el ID para el embalse: " + nombreEmbalseObtenido));
-
-                    double hm3Actual = Double.parseDouble(m.group(2).replace(",", "."));
-                    double porc = Double.parseDouble(m.group(3).replace(",", "."));
-                    double hm3Anterior = embalseDAO.obtenerHm3AnteriorYActualizar(nombreEmbalseObtenido, hm3Actual);
-                    double variacion = hm3Actual - hm3Anterior;
-
-                    TendenciaEnum tendencia = switch (Double.compare(variacion, 0)) {
-                        case 1  -> TendenciaEnum.SUBIDA;
-                        case -1 -> TendenciaEnum.BAJADA;
-                        default -> TendenciaEnum.ESTABLE;
-                    };
-
-                    embalseDAO.guardarLectura(idEmbalse, hm3Actual, porc, variacion, tendencia);
-
-                }
-            } catch (Exception e) {
-                Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
-            }
-    }
-
     public void obtenerAndActualizarDatosDeLaWeb() throws FunctionalExceptions {
         try {
             // 1. Scraping

@@ -8,6 +8,7 @@ import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -196,40 +197,15 @@ public class EmbalseDAO {
         }
     }
 
-    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList(String nombreTabla) throws FunctionalExceptions {
-
-        int intentos = 0;
-        boolean exito = false;
-
-        String sqlSelect = "SELECT volumen_total, porcentaje_total, fecha_registro FROM " + nombreTabla + " ORDER BY fecha_registro ASC";
-
-        List<HistoricoCuencaDTO> historicoCuencaDTOList = new ArrayList<>();
-
-        while (intentos < 3 && !exito) {
-            try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sqlSelect);
-                 ResultSet rs = ps.executeQuery()) {
-
-                exito = true;
-
-                while (rs.next()) {
-
-                    historicoCuencaDTOList.add(new HistoricoCuencaDTO(
-                            rs.getDouble("volumen_total"),
-                            rs.getDouble("porcentaje_total"),
-                            rs.getTimestamp("fecha_registro")
-                    ));
-                }
-
-            } catch (Exception e) {
-                intentos++;
-                if (intentos >= 3) {
-                    Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);
-                }
-                manejarEspera(3000L);
-            }
-        }
-        return historicoCuencaDTOList;
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList(String nombreTabla) {
+        return dsl.select(
+                        DSL.field("volumen_total", Double.class),
+                        DSL.field("porcentaje_total", Double.class),
+                        DSL.field("fecha_registro", Timestamp.class)
+                )
+                .from(DSL.table(DSL.name(nombreTabla))) // Uso de name() para evitar SQL Injection
+                .orderBy(DSL.field("fecha_registro").asc())
+                .fetchInto(HistoricoCuencaDTO.class); // Mapeo automático ultra rápido
     }
 
     public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
