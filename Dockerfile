@@ -2,14 +2,6 @@
 FROM maven:3.8.5-openjdk-17 AS build
 COPY . .
 
-
-# --- NUEVA SECCIÓN PARA JOOQ ---
-# Creamos el archivo que Maven busca usando variables de entorno de Render
-RUN echo "db.url=${SPRING_DATASOURCE_URL}" > jooq-codegen.properties && \
-    echo "db.user=${SPRING_DATASOURCE_USERNAME}" >> jooq-codegen.properties && \
-    echo "db.password=${SPRING_DATASOURCE_PASSWORD}" >> jooq-codegen.properties
-# -------------------------------
-
 RUN mvn clean package -DskipTests
 
 # Etapa de ejecución
