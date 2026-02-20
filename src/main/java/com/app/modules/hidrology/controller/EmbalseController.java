@@ -2,7 +2,6 @@ package com.app.modules.hidrology.controller;
 
 import com.app.modules.hidrology.dto.EmbalseDTO;
 import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
-import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,37 +59,6 @@ public class EmbalseController {
         List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuencaSeguraUltimoDia();
 
         return ResponseEntity.ok(datos);
-    }
-
-    /**
-     * Este método lo llamará un Cron-job 1 vez cada hora
-     * guarda los datos en la tabla historico_cuenca_segura_diario
-     * Se usa en el grafico principal del front
-     * SÍ hace scraping y guarda en la base de datos.
-     */
-    @PostMapping("/insertar-cuenca-segura-diario")
-    public ResponseEntity<String> getDataWebAndUpdateEveryHour(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
-        if (key == null || !key.equals(cronKey)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
-        }
-        embalseService.getHistoricoCuencaSeguraUltimoDia();
-        return ResponseEntity.ok("Datos historico_cuenca_segura_diario insertados en Neon");
-    }
-
-    /**
-     * Este método lo llamará un Cron-job 1 vez al día y
-     * guarda los datos en la tabla historico_cuenca_segura
-     * Se usa en el grafico principal del front
-     * SÍ hace scraping y guarda en la base de datos.
-     */
-    @PostMapping("/internal-refresh")
-    public ResponseEntity<String> getDataWebAndUpdateEveryDay(@RequestHeader(value = "X-Cron-Key", required = false) String key) throws FunctionalExceptions {
-        if (key == null || !key.equals(cronKey)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Acceso denegado");
-        }
-
-        embalseService.obtenerDatosWebAndUpdateEveryDay();
-        return ResponseEntity.ok("Datos actualizados en Neon");
     }
 
     /**

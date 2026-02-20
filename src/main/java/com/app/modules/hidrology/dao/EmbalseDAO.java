@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -63,31 +64,6 @@ public class EmbalseDAO {
             }
         }
         return hm3Anterior;
-    }
-
-    public void guardarLectura(Integer embalseId, double hm3, double porc, Double variacion, TendenciaEnum tendencia) throws SQLException {
-
-        String sqlInsertaLectura = "INSERT INTO lecturas_embalses (embalse_id, hm3_actual, porcentaje, variacion, tendencia) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            //  Insertar la lectura asociada al ID obtenido
-            try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
-                psLectura.setInt(1, embalseId);
-                psLectura.setDouble(2, hm3);
-                psLectura.setDouble(3, porc);
-
-                // Manejo de nulos para la variación (en caso de que sea la primera lectura)
-                if (variacion != null) {
-                    psLectura.setDouble(4, variacion);
-                } else {
-                    psLectura.setNull(4, java.sql.Types.DOUBLE);
-                }
-
-                psLectura.setString(5, tendencia.getValor());
-                psLectura.executeUpdate();
-            }
-        }
     }
 
     public List<EmbalseDTO> obtenerUltimasLecturasConVariacionPorIntervalo(String intervalo) throws SQLException {
@@ -179,22 +155,19 @@ public class EmbalseDAO {
                 .fetchInto(EmbalseDTO.class);
     }
 
-    public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc, String nombreTabla) throws SQLException {
-
-        String sqlInsertaLectura = "INSERT INTO " + nombreTabla + " (volumen_total, porcentaje_total, fecha_registro) " +
-                "VALUES (?, ?, CURRENT_TIMESTAMP)";
-
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertaLectura)) {
-
-                psLectura.setDouble(1, volumenActualCuenca);
-                psLectura.setDouble(2, porc);
-                psLectura.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace(); // Es vital para ver el detalle en los logs de Render
-                throw new RuntimeException("Error en la BD Neon: " + e.getMessage());
-            }
-        }
+    public void insertarValoresEnHistoricoCuencaSegura(double volumenActualCuenca, double porc, String nombreTabla) {
+        dsl.insertInto(DSL.table(DSL.name(nombreTabla)))
+                .columns(
+                        DSL.field("volumen_total"),
+                        DSL.field("porcentaje_total"),
+                        DSL.field("fecha_registro")
+                )
+                .values(
+                        volumenActualCuenca,
+                        porc,
+                        DSL.currentTimestamp() // Usa la función nativa de la BD
+                )
+                .execute();
     }
 
     public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraList(String nombreTabla) {
@@ -208,37 +181,6 @@ public class EmbalseDAO {
                 .fetchInto(HistoricoCuencaDTO.class); // Mapeo automático ultra rápido
     }
 
-    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
-
-        List<HistoricoCuencaDTO> historicoCuencaDTOList = new ArrayList<>();
-        try {
-            Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
-            String todoElTexto = doc.body().text();
-
-            // Este patrón busca: "E.Nombre (Cota) H Hm3 %"
-            // Ejemplo: E.Fuensanta (67,92) 34,69 29,184 13,9
-            Pattern p = Pattern.compile("E\\.([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+)\\s\\([^\\)]+\\)\\s[0-9,.]+\\s([0-9,.]+)\\s([0-9,.]+)");
-            Matcher m = p.matcher(todoElTexto);
-
-            double volumenActualCuenca = 0.0;
-            double porcentajeTotalCuenca = 0.0;
-            while (m.find()) {
-
-                double volumenActualEmbalse = Double.parseDouble(m.group(2).replace(",", "."));
-                volumenActualCuenca = volumenActualCuenca + volumenActualEmbalse;
-
-            }
-
-            porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
-
-            this.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
-
-            historicoCuencaDTOList = this.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
-        } catch (Exception e) {
-            Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
-        }
-        return historicoCuencaDTOList;
-    }
 
     public void checkDatabaseConnection() throws FunctionalExceptions {
         int intentos = 0;
@@ -269,7 +211,7 @@ public class EmbalseDAO {
         }
     }
 
-    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalseOld(int idEmbalse) throws FunctionalExceptions {
         List<EmbalseDTO> embalseDTOList = new ArrayList<>();
 
         String sqlHistoricoEmbalse = "SELECT lecturas.*, emb.nombre AS nombre_embalse, emb.capacidad_maxima FROM lecturas_embalses lecturas " +
@@ -314,6 +256,41 @@ public class EmbalseDAO {
             }
         }
         return embalseDTOList;
+    }
+
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) {
+        return dsl.select(
+                        LECTURAS_EMBALSES.EMBALSE_ID,
+                        EMBALSES.NOMBRE.as("nombre_embalse"),
+                        LECTURAS_EMBALSES.HM3_ACTUAL,
+                        LECTURAS_EMBALSES.PORCENTAJE,
+                        EMBALSES.CAPACIDAD_MAXIMA,
+                        LECTURAS_EMBALSES.VARIACION,
+                        LECTURAS_EMBALSES.TENDENCIA,
+                        LECTURAS_EMBALSES.FECHA_REGISTRO
+                )
+                .from(LECTURAS_EMBALSES)
+                .join(EMBALSES).on(LECTURAS_EMBALSES.EMBALSE_ID.eq(EMBALSES.ID))
+                .where(LECTURAS_EMBALSES.EMBALSE_ID.eq(idEmbalse))
+                .orderBy(LECTURAS_EMBALSES.FECHA_REGISTRO.asc())
+                .fetch(record -> {
+                    // Mapeo personalizado para manejar el Enum de tendencia
+                    String tendenciaStr = record.get(LECTURAS_EMBALSES.TENDENCIA);
+                    TendenciaEnum tendencia = (tendenciaStr != null)
+                            ? TendenciaEnum.valueOf(tendenciaStr.toUpperCase())
+                            : TendenciaEnum.ESTABLE;
+
+                    return new EmbalseDTO(
+                            record.get(LECTURAS_EMBALSES.EMBALSE_ID),
+                            record.get(EMBALSES.NOMBRE.as("nombre_embalse")),
+                            record.get(LECTURAS_EMBALSES.HM3_ACTUAL, Double.class), // jOOQ lo convierte automáticamente
+                            record.get(LECTURAS_EMBALSES.PORCENTAJE, Double.class),
+                            record.get(EMBALSES.CAPACIDAD_MAXIMA, Double.class),
+                            record.get(LECTURAS_EMBALSES.VARIACION, Double.class),
+                            tendencia,
+                            Timestamp.valueOf(record.get(LECTURAS_EMBALSES.FECHA_REGISTRO))
+                    );
+                });
     }
 
 }

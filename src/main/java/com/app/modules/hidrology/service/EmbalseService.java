@@ -15,11 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,7 +46,7 @@ public class EmbalseService {
 
     public record LecturaProcesada(int id, double hm3, double porc, double variacion, String tendencia) {}
 
-    public void obtenerAndActualizarDatosDeLaWeb() throws FunctionalExceptions {
+    public void getEmbalsesDataAndInsertInLecturasEmbalses() throws FunctionalExceptions {
         try {
             // 1. Scraping
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").timeout(10000).get();
@@ -116,7 +117,7 @@ public class EmbalseService {
         return variacion > 0 ? "SUBIDA" : "BAJADA";
     }
 
-    public void obtenerDatosWebAndUpdateEveryDay() throws FunctionalExceptions {
+    public void getAndInsertHistoricoCuencaSegura() throws FunctionalExceptions {
         try {
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
             String todoElTexto = doc.body().text();
@@ -173,7 +174,30 @@ public class EmbalseService {
     }
 
     public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
-        return embalseDAO.getHistoricoCuencaSeguraUltimoDia();
+        return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
+    }
+
+    public void getAndInsertHistoricoCuencaSeguraHorario() throws IOException, SQLException {
+        Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/inicial.php").get();
+        String todoElTexto = doc.body().text();
+
+        // Este patrón busca: "E.Nombre (Cota) H Hm3 %"
+        // Ejemplo: E.Fuensanta (67,92) 34,69 29,184 13,9
+        Pattern p = Pattern.compile("E\\.([a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+)\\s\\([^\\)]+\\)\\s[0-9,.]+\\s([0-9,.]+)\\s([0-9,.]+)");
+        Matcher m = p.matcher(todoElTexto);
+
+        double volumenActualCuenca = 0.0;
+        double porcentajeTotalCuenca = 0.0;
+        while (m.find()) {
+
+            double volumenActualEmbalse = Double.parseDouble(m.group(2).replace(",", "."));
+            volumenActualCuenca = volumenActualCuenca + volumenActualEmbalse;
+
+        }
+
+        porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
+
+        embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
     }
 
     public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
