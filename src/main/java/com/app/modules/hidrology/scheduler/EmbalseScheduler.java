@@ -1,11 +1,8 @@
 package com.app.modules.hidrology.scheduler;
 
-import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.hidrology.service.EmbalseService;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

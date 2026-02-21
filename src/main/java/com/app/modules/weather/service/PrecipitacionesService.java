@@ -1,13 +1,10 @@
 package com.app.modules.weather.service;
 
-import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.jooq.generated.tables.EstacionesMeteorologicas;
 import com.app.core.model.Precipitaciones;
 import com.app.core.repository.PrecipitacionesRepository;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
-import okhttp3.OkHttpClient;
 import org.jooq.DSLContext;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

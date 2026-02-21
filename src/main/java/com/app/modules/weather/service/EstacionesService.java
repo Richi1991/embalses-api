@@ -1,14 +1,10 @@
 package com.app.modules.weather.service;
 
-import com.app.core.constantes.Constants;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.model.HistoricoPrecipitaciones;
 import com.app.core.repository.HistoricoPrecipitacionesRepository;
 import com.app.modules.weather.dao.EstacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
-import com.app.modules.weather.dto.PrecipitacionesDTO;
-import com.app.modules.weather.dto.TemperaturasDTO;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,11 +13,6 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

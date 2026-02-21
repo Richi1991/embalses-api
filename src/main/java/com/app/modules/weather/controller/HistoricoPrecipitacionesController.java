@@ -1,9 +1,7 @@
 package com.app.modules.weather.controller;
 
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.model.HistoricoPrecipitaciones;
 import com.app.core.repository.AcumuladoEstacion;
-import com.app.modules.hidrology.dto.PrecipitacionMapaDTO;
 import com.app.modules.weather.service.HistoricoPrecipitacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

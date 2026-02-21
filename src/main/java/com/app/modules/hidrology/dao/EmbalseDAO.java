@@ -107,7 +107,6 @@ public class EmbalseDAO {
                 .fetchInto(HistoricoCuencaDTO.class); // Mapeo automático ultra rápido
     }
 
-
     public void checkDatabaseConnection() throws FunctionalExceptions {
         int intentos = 0;
         boolean conectado = false;
@@ -168,6 +167,56 @@ public class EmbalseDAO {
                             record.get(LECTURAS_EMBALSES.VARIACION, Double.class),
                             tendencia,
                             Timestamp.valueOf(record.get(LECTURAS_EMBALSES.FECHA_REGISTRO))
+                    );
+                });
+    }
+
+
+    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() {
+
+        // 1. Definimos el ranking: particionamos por embalse y ordenamos por fecha descendente
+        var rowNumberField = DSL.rowNumber()
+                .over(DSL.partitionBy(LECTURAS_EMBALSES.EMBALSE_ID)
+                        .orderBy(LECTURAS_EMBALSES.FECHA_REGISTRO.desc()))
+                .as("fila_numero");
+
+        // 2. Creamos una subconsulta que incluya ese número de fila
+        var subquery = dsl.select(
+                        LECTURAS_EMBALSES.EMBALSE_ID,
+                        EMBALSES.NOMBRE,
+                        LECTURAS_EMBALSES.HM3_ACTUAL,
+                        LECTURAS_EMBALSES.PORCENTAJE,
+                        EMBALSES.CAPACIDAD_MAXIMA,
+                        LECTURAS_EMBALSES.VARIACION,
+                        LECTURAS_EMBALSES.TENDENCIA,
+                        LECTURAS_EMBALSES.FECHA_REGISTRO,
+                        EMBALSES.LATITUD,
+                        EMBALSES.LONGITUD,
+                        rowNumberField
+                )
+                .from(LECTURAS_EMBALSES)
+                .join(EMBALSES).on(LECTURAS_EMBALSES.EMBALSE_ID.eq(EMBALSES.ID));
+
+        // 3. Filtramos la subconsulta para quedarnos solo con las filas número 1
+        return dsl.selectFrom(subquery.asTable("ultima_lectura"))
+                .where(DSL.field(DSL.name("ultima_lectura", "fila_numero")).eq(1))
+                .fetch(record -> {
+                    String tendenciaStr = record.get(LECTURAS_EMBALSES.TENDENCIA);
+                    TendenciaEnum tendencia = (tendenciaStr != null)
+                            ? TendenciaEnum.valueOf(tendenciaStr.toUpperCase())
+                            : TendenciaEnum.ESTABLE;
+
+                    return new EmbalseDTO(
+                            record.get(LECTURAS_EMBALSES.EMBALSE_ID),
+                            record.get(EMBALSES.NOMBRE),
+                            record.get(LECTURAS_EMBALSES.HM3_ACTUAL, Double.class),
+                            record.get(LECTURAS_EMBALSES.PORCENTAJE, Double.class),
+                            record.get(EMBALSES.CAPACIDAD_MAXIMA, Double.class),
+                            record.get(LECTURAS_EMBALSES.VARIACION, Double.class),
+                            tendencia,
+                            record.get(LECTURAS_EMBALSES.FECHA_REGISTRO, Timestamp.class),
+                            record.get(EMBALSES.LATITUD),
+                            record.get(EMBALSES.LONGITUD)
                     );
                 });
     }

@@ -155,19 +155,13 @@ public class EmbalseService {
         return lista;
     }
 
-
-
     public void checkDatabaseNeonConnection() throws FunctionalExceptions {
         embalseDAO.checkDatabaseConnection();
     }
 
-
-
     public List<HistoricoCuencaDTO> getHistoricoCuencaSegura() throws FunctionalExceptions {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA);
     }
-
-
 
     public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(int idEmbalse) throws FunctionalExceptions {
         return embalseDAO.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
@@ -175,6 +169,10 @@ public class EmbalseService {
 
     public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraUltimoDia() throws FunctionalExceptions {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
+    }
+
+    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() {
+        return embalseDAO.getEmbalsesLastValueAndPosition();
     }
 
     public void getAndInsertHistoricoCuencaSeguraHorario() throws IOException, SQLException {

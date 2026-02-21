@@ -5,7 +5,6 @@ import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
 import com.app.core.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.app.modules.hidrology.service.EmbalseService;
@@ -42,9 +41,8 @@ public class EmbalseController {
      * @throws FunctionalExceptions
      */
     @GetMapping("/historico-cuenca")
-    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSegura() throws FunctionalExceptions {
-        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuencaSegura();
-        return ResponseEntity.ok(datos);
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSegura() throws FunctionalExceptions {
+        return embalseService.getHistoricoCuencaSegura();
     }
 
 
@@ -55,10 +53,8 @@ public class EmbalseController {
      * @throws FunctionalExceptions
      */
     @GetMapping("/historico-cuenca-diario")
-    public ResponseEntity<List<HistoricoCuencaDTO>> getHistoricoCuencaSeguraDiaros() throws FunctionalExceptions {
-        List<HistoricoCuencaDTO> datos = embalseService.getHistoricoCuencaSeguraUltimoDia();
-
-        return ResponseEntity.ok(datos);
+    public List<HistoricoCuencaDTO> getHistoricoCuencaSeguraDiaros() throws FunctionalExceptions {
+        return embalseService.getHistoricoCuencaSeguraUltimoDia();
     }
 
     /**
@@ -67,9 +63,13 @@ public class EmbalseController {
      * y muestra el grafico de la pantalla de cada embalse
      */
     @GetMapping("/obtener_historico_embalse{idEmbalse}")
-    public ResponseEntity<List<EmbalseDTO>> obtenerHistoricoEmbalsePorIdEmbalse(@PathVariable("idEmbalse") int idEmbalse) throws FunctionalExceptions {
-        List<EmbalseDTO> historicoEmbalseList = embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
-        return ResponseEntity.ok(historicoEmbalseList);
+    public List<EmbalseDTO> obtenerHistoricoEmbalsePorIdEmbalse(@PathVariable("idEmbalse") int idEmbalse) throws FunctionalExceptions {
+        return embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
+    }
+
+    @GetMapping("/get_embalses_last_value_and_position")
+    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() {
+        return embalseService.getEmbalsesLastValueAndPosition();
     }
 
     /**
