@@ -29,7 +29,9 @@ public enum EmbalseEnum {
     ALGECIRAS(23, "ALGECIRAS"),
     JOSE_BAUTISTA(24, "JOSÉ BAUTISTA"),
     LA_PEDRERA(25, "LA PEDRERA"),
-    CREVILLENTE(26, "CREVILLENTE");
+    CREVILLENTE(26, "CREVILLENTE"),
+    ANCHURICAS(27, "ANCHURICAS"),
+    TAIBILLA(28, "TAIBILLA");
 
     private final Integer codigoEmbalse;
     private final String nombreEmbalse;
