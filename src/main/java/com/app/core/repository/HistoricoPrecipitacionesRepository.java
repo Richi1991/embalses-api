@@ -12,9 +12,6 @@ import java.util.List;
 @Repository
 public interface HistoricoPrecipitacionesRepository extends JpaRepository<HistoricoPrecipitaciones, Long> {
 
-    @Query(value= "SELECT * FROM historico_precipitaciones WHERE fecha_registro BETWEEN :fechaInicio AND :fechaFin", nativeQuery = true )
-    List<HistoricoPrecipitaciones> getValoresHistoricoPrecipitacionesBetweenTwoDates(Timestamp fechaInicio, Timestamp fechaFin);
-
     @Query(value = "SELECT " +
             "est.indicativo, " +
             "est.nombre, " +

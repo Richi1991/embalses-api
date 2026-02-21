@@ -55,9 +55,6 @@ public class HistoricoPrecipitacionesService {
     private EstacionesMeteorologicasRepository estacionesMeteorologicasRepository;
 
     @Autowired
-    private MapaPrecipitacionRepository repo;
-
-    @Autowired
     private PrecipitacionesRepository precipitacionesRepository;
 
     public HistoricoPrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
@@ -431,15 +428,6 @@ public class HistoricoPrecipitacionesService {
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
-    public List<HistoricoPrecipitaciones> obtenerValoresHistoricoPrecipitaciones(String fechaInicio, String fechaFin) {
-
-        Timestamp fechaInicioTimestamp = fechaStringToTimestamp(fechaInicio);
-        Timestamp fechaFinTimestamp = fechaStringToTimestamp(fechaFin);
-
-        return historicoPrecipitacionesRepository.getValoresHistoricoPrecipitacionesBetweenTwoDates(fechaInicioTimestamp, fechaFinTimestamp);
-    }
-
-
     public List<AcumuladoEstacion> obtenerValoresPrecipitacionesAcumulados(String rango) {
 
         return historicoPrecipitacionesRepository.findAcumuladosDinamicos(rango);
@@ -454,25 +442,6 @@ public class HistoricoPrecipitacionesService {
 
         // 3. Convertimos a Timestamp asignando las 00:00:00 horas
         return Timestamp.valueOf(fecha.atStartOfDay());
-    }
-
-
-
-    public List<PrecipitacionMapaDTO> getDatosMapa(String rango) {
-        OffsetDateTime fin = OffsetDateTime.now();
-        OffsetDateTime inicio;
-
-        switch (rango) {
-            case "semana": inicio = fin.minusWeeks(1); break;
-            case "mes": inicio = fin.minusMonths(1); break;
-            case "hidrologico":
-                int year = (fin.getMonthValue() >= 10) ? fin.getYear() : fin.getYear() - 1;
-                inicio = OffsetDateTime.of(year, 10, 1, 0, 0, 0, 0, fin.getOffset());
-                break;
-            default: inicio = fin.minusDays(1); // Por defecto último día
-        }
-
-        return repo.obtenerMapaPrecipitacion(inicio, fin);
     }
 
     public void insertarHistoricoPrecipitacionesChsFromPrecipitaciones(int days) {

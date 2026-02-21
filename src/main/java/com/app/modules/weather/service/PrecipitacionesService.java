@@ -197,12 +197,4 @@ public class PrecipitacionesService {
         System.out.println("Lote de " + entidades.size() + " registros guardado con éxito.");
     }
 
-    public void getValuesOfTodayAemetByProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
-
-        List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia = estacionesService.obtenerEstacionesAemetPorProvincia(provincia, apiKeyAemet);
-
-        OkHttpClient client = new OkHttpClient();
-
-
-    }
 }

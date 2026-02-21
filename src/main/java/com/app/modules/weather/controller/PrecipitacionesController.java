@@ -46,9 +46,4 @@ public class PrecipitacionesController {
         return estacionesDTOWithPrecipitacionesList;
     }
 
-    @GetMapping("/get_values_of_today_aemet/{provincia}")
-    public void getValuesOfTodayAemetByProvincia(@PathVariable (value= "provincia") String provincia) throws FunctionalExceptions {
-        precipitacionesService.getValuesOfTodayAemetByProvincia(provincia, apiKeyAemet);
-    }
-
 }

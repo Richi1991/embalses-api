@@ -107,18 +107,9 @@ public class HistoricoPrecipitacionesController {
         return ResponseEntity.ok("Insercción historico precipitaciones chs from precipitaciones iniciada en background");
     }
 
-    @GetMapping("/obtener_valores_historico_precipitaciones/{fechaInicio}/{fechaFin}")
-    public List<HistoricoPrecipitaciones> obtenerValoresHistoricoPrecipitaciones(@PathVariable(value ="fechaInicio") String fechaInicio, @PathVariable(value="fechaFin") String fechaFin) {
-        return historicoPrecipitacionesService.obtenerValoresHistoricoPrecipitaciones(fechaInicio, fechaFin);
-    }
-
     @GetMapping("/obtener_valores_precipitaciones_acumulados/{rango}")
     public List<AcumuladoEstacion> obtenerValoresPrecipitacionesAcumulados(@PathVariable(value ="rango") String rango) {
         return historicoPrecipitacionesService.obtenerValoresPrecipitacionesAcumulados(rango);
     }
 
-    @GetMapping("/obtener_datos_mapa_precipitaciones/{rango}")
-    public ResponseEntity<List<PrecipitacionMapaDTO>> obtenerDatosMapaPrecipitaciones(@PathVariable(value ="rango") String rango) {
-        return ResponseEntity.ok(historicoPrecipitacionesService.getDatosMapa(rango));
-    }
 }

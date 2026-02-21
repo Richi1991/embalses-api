@@ -43,7 +43,7 @@ public class EmbalseScheduler {
         }
     }
 
-    @Scheduled(cron = "0 30 0 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void getAndSaveHistoricoCuencaSeguraHorario() {
         try {
             System.out.println("Iniciando scraping automático...");
