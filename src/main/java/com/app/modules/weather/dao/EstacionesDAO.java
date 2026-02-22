@@ -1,44 +1,58 @@
 package com.app.modules.weather.dao;
 
-import com.app.core.config.DatabaseConfig;
 import com.app.core.constantes.Constants;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dto.EstacionesDTO;
+import org.jooq.DSLContext;
+import org.jooq.Query;
+import org.jooq.exception.DataAccessException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.app.core.jooq.generated.Tables.ESTACIONES_METEOROLOGICAS;
 
 @Repository
 public class EstacionesDAO {
 
-    public void insertarEstacionesAemetFilterByProvincia(List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia) throws FunctionalExceptions {
+    @Autowired
+    private DSLContext dsl;
 
+    public void insertarEstacionesAemetFilterByProvincia(List<EstacionesDTO> estaciones) throws FunctionalExceptions {
         int intentos = 0;
         boolean exito = false;
 
-        String sqlInsertarEstacionesFilteredByProvincia = "INSERT INTO estaciones_meteorologicas(latitud, provincia, altitud, indicativo, nombre, indsinop, longitud, red_origen)" +
-                "VALUES(?,?,?,?,?,?,?)";
-
         while (intentos < 3 && !exito) {
-            try (Connection conn = DatabaseConfig.getConnection()) {
-                try (PreparedStatement psLectura = conn.prepareStatement(sqlInsertarEstacionesFilteredByProvincia)) {
-                    exito = true;
-                    for (EstacionesDTO estacionesAemetDTO : estacionesAemetDTOListFilterByProvincia) {
-                        psLectura.setString(1, estacionesAemetDTO.getLatitud());
-                        psLectura.setString(2, estacionesAemetDTO.getProvincia());
-                        psLectura.setLong(3, estacionesAemetDTO.getAltitud());
-                        psLectura.setString(4, estacionesAemetDTO.getIndicativo());
-                        psLectura.setString(5, estacionesAemetDTO.getNombre());
-                        psLectura.setString(6, estacionesAemetDTO.getIndsinop());
-                        psLectura.setString(7, estacionesAemetDTO.getLongitud());
-                        psLectura.setString(8, Constants.AEMET);
-                        psLectura.executeUpdate();
-                    }
-                }
-            } catch (Exception e) {
+            try {
+                List<Query> inserts = estaciones.stream()
+                        .map(dto -> (Query) dsl.insertInto(ESTACIONES_METEOROLOGICAS,
+                                        ESTACIONES_METEOROLOGICAS.LATITUD,
+                                        ESTACIONES_METEOROLOGICAS.PROVINCIA,
+                                        ESTACIONES_METEOROLOGICAS.ALTITUD,
+                                        ESTACIONES_METEOROLOGICAS.INDICATIVO,
+                                        ESTACIONES_METEOROLOGICAS.NOMBRE,
+                                        ESTACIONES_METEOROLOGICAS.INDSINOP,
+                                        ESTACIONES_METEOROLOGICAS.LONGITUD,
+                                        ESTACIONES_METEOROLOGICAS.RED_ORIGEN)
+                                .values(
+                                        dto.getLatitud(),
+                                        dto.getProvincia(),
+                                        dto.getAltitud(),
+                                        dto.getIndicativo(),
+                                        dto.getNombre(),
+                                        dto.getIndsinop(),
+                                        dto.getLongitud(),
+                                        Constants.AEMET))
+                        .collect(Collectors.toList());
+
+                dsl.batch(inserts).execute();
+                exito = true;
+
+            } catch (DataAccessException e) {
                 intentos++;
                 if (intentos >= 3) {
                     Exceptions.EMB_E_0004.lanzarExcepcionCausada(e);

@@ -65,7 +65,7 @@ public class EstacionesService {
                                         EstacionesDTO estacionesDTO = new EstacionesDTO();
                                         estacionesDTO.setLatitud(nodo.get("latitud").asString());
                                         estacionesDTO.setProvincia(nodo.get("provincia").asString());
-                                        estacionesDTO.setAltitud(nodo.get("altitud").asLong());
+                                        estacionesDTO.setAltitud(nodo.get("altitud").asShort());
                                         estacionesDTO.setIndicativo(nodo.get("indicativo").asString());
                                         estacionesDTO.setNombre(nodo.get("nombre").asString());
                                         estacionesDTO.setIndsinop(nodo.get("indsinop").asString());

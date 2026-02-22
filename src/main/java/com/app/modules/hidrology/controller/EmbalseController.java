@@ -72,18 +72,4 @@ public class EmbalseController {
         return embalseService.getEmbalsesLastValueAndPosition();
     }
 
-    /**
-     * Este método lo llamará un Cron-job cada 10 minutos.
-     * NO guarda en BD, solo hace una query rápida para despertar a Render y Neon.
-     */
-    @GetMapping("/keep-alive")
-    public ResponseEntity<String> keepAlive() {
-        try {
-            embalseService.checkDatabaseNeonConnection();
-            return ResponseEntity.ok("Servidor despierto y Neon conectado");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al despertar");
-        }
-    }
-
 }

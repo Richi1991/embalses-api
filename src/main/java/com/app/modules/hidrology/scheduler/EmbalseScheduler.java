@@ -27,18 +27,18 @@ public class EmbalseScheduler {
         }
     }
 
-//    @Scheduled(fixedRate = 240000)
-//    public void keepNeonDespierto() {
-//        try {
-//            // Una consulta que no pesa nada pero cuenta como actividad
-//            dsl.selectOne().execute();
-//            // Solo para que lo veas en los logs de Render al principio
-//            System.out.println(">>> Keep-Alive: Neon sigue despierto.");
-//        } catch (Exception e) {
-//            // Si falla, probablemente es que Neon ya se estaba durmiendo,
-//            // la siguiente ejecución lo despertará.
-//        }
-//    }
+    @Scheduled(fixedRate = 600000)
+    public void keepRenderDespierto() {
+        try {
+            // Una consulta que no pesa nada pero cuenta como actividad
+            dsl.selectOne().execute();
+            // Solo para que lo veas en los logs de Render al principio
+            System.out.println(">>> Keep-Alive: Despertando a Render.");
+        } catch (Exception e) {
+            // Si falla, probablemente es que Neon ya se estaba durmiendo,
+            // la siguiente ejecución lo despertará.
+        }
+    }
 
     @Scheduled(cron = "0 0 * * * *")
     public void getAndSaveHistoricoCuencaSeguraHorario() {

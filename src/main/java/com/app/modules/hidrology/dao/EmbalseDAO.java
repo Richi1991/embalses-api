@@ -1,26 +1,15 @@
 package com.app.modules.hidrology.dao;
-
-import com.app.core.config.DatabaseConfig;
-import com.app.core.constantes.Constants;
 import com.app.modules.hidrology.dto.TendenciaEnum;
 import com.app.modules.hidrology.dto.EmbalseDTO;
 import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
-import com.app.core.exceptions.Exceptions;
-import com.app.core.exceptions.FunctionalExceptions;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.app.core.jooq.generated.Tables.EMBALSES;
 import static com.app.core.jooq.generated.Tables.LECTURAS_EMBALSES;
@@ -105,27 +94,6 @@ public class EmbalseDAO {
                 .from(DSL.table(DSL.name(nombreTabla))) // Uso de name() para evitar SQL Injection
                 .orderBy(DSL.field("fecha_registro").asc())
                 .fetchInto(HistoricoCuencaDTO.class); // Mapeo automático ultra rápido
-    }
-
-    public void checkDatabaseConnection() throws FunctionalExceptions {
-        int intentos = 0;
-        boolean conectado = false;
-
-        while (intentos < 3 && !conectado) {
-            try (Connection conn = DatabaseConfig.getConnection();
-                 Statement stmt = conn.createStatement()) {
-
-                stmt.executeQuery("SELECT 1");
-                conectado = true; // Si llega aquí, todo ok
-
-            } catch (Exception e) {
-                intentos++;
-                if (intentos >= 3) {
-                    Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
-                }
-                manejarEspera(8000L);
-            }
-        }
     }
 
     public void manejarEspera(Long time) {

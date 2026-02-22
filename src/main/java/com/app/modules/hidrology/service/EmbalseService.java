@@ -155,10 +155,6 @@ public class EmbalseService {
         return lista;
     }
 
-    public void checkDatabaseNeonConnection() throws FunctionalExceptions {
-        embalseDAO.checkDatabaseConnection();
-    }
-
     public List<HistoricoCuencaDTO> getHistoricoCuencaSegura() throws FunctionalExceptions {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA);
     }
