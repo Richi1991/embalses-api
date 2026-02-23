@@ -25,6 +25,7 @@ public class EmbalseController {
     /**
      * Primero obtiene los ultimos datos de la web de la chs y los guarda en la tabla lecturas_embalses
      * Después obtiene las Ultimas Lecturas Con Variacion Por Intervalo de fechas de la tabla lecturas_embalses
+     *
      * @param intervalo
      * @return
      * @throws FunctionalExceptions
@@ -37,6 +38,7 @@ public class EmbalseController {
     /**
      * Obtiene los datos de historico de cuenca del Segura
      * Los muestra en la gráfica principal
+     *
      * @return
      * @throws FunctionalExceptions
      */
@@ -49,6 +51,7 @@ public class EmbalseController {
     /**
      * Obtiene los datos de historico de cuenca del Segura diarios
      * Los muestra en la gráfica principal
+     *
      * @return
      * @throws FunctionalExceptions
      */
