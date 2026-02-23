@@ -1,7 +1,7 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 COPY . .
-RUN mvn clean package -DskipTests -Djooq.codegen.skip=true
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jdk-jammy
 COPY _.chsegura.es.crt /usr/local/share/ca-certificates/chs_root.crt

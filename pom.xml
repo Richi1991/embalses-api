@@ -18,7 +18,9 @@
         <java.version>17</java.version>
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <jooq.codegen.skip>false</jooq.codegen.skip>
+
         <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
         <db.user>none</db.user>
         <db.pass>none</db.pass>
@@ -129,6 +131,25 @@
             </plugin>
 
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/jooq</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
                 <version>3.19.16</version>
@@ -205,9 +226,9 @@
         <profile>
             <id>render</id>
             <activation>
-                <file>
-                    <missing>jooq-codegen.properties</missing>
-                </file>
+                <property>
+                    <name>env.SPRING_DATASOURCE_URL</name>
+                </property>
             </activation>
             <properties>
                 <db.url>${env.SPRING_DATASOURCE_URL}</db.url>
