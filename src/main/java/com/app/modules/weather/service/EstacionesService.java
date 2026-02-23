@@ -4,13 +4,13 @@ import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.weather.dao.EstacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,15 +57,21 @@ public class EstacionesService {
                                 JsonNode rootNode = mapper.readTree(jsonDataEstaciones);
 
                                 for (JsonNode nodo : rootNode) {
-                                    if (nodo.get("provincia").asString().equals(provincia)) {
+                                    // Cambiado .asString() por .asText()
+                                    if (nodo.get("provincia").asText().equals(provincia)) {
                                         EstacionesDTO estacionesDTO = new EstacionesDTO();
-                                        estacionesDTO.setLatitud(nodo.get("latitud").asString());
-                                        estacionesDTO.setProvincia(nodo.get("provincia").asString());
-                                        estacionesDTO.setAltitud(nodo.get("altitud").asShort());
-                                        estacionesDTO.setIndicativo(nodo.get("indicativo").asString());
-                                        estacionesDTO.setNombre(nodo.get("nombre").asString());
-                                        estacionesDTO.setIndsinop(nodo.get("indsinop").asString());
-                                        estacionesDTO.setLongitud(nodo.get("longitud").asString());
+
+                                        estacionesDTO.setLatitud(nodo.get("latitud").asText());
+                                        estacionesDTO.setProvincia(nodo.get("provincia").asText());
+
+                                        // Jackson usa asInt(), asLong() o asDouble(). Para un short, asInt() es lo más seguro.
+                                        estacionesDTO.setAltitud((short) nodo.get("altitud").asInt());
+
+                                        estacionesDTO.setIndicativo(nodo.get("indicativo").asText());
+                                        estacionesDTO.setNombre(nodo.get("nombre").asText());
+                                        estacionesDTO.setIndsinop(nodo.get("indsinop").asText());
+                                        estacionesDTO.setLongitud(nodo.get("longitud").asText());
+
                                         estacionesAemetDTOListFilterByProvincia.add(estacionesDTO);
                                     }
                                 }
