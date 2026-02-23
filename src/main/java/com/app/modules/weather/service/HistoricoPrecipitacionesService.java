@@ -2,9 +2,8 @@ package com.app.modules.weather.service;
 
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.model.EstacionesMeteorologicas;
+import com.app.core.jooq.generated.tables.records.EstacionesMeteorologicasRecord;
 import com.app.core.model.HistoricoPrecipitaciones;
-import com.app.core.model.PrecipitacionLastDays;
 import com.app.core.repository.*;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
@@ -14,9 +13,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.jooq.DSLContext;
+import org.jooq.DatePart;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -26,30 +26,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.app.core.jooq.generated.Tables.HISTORICO_PRECIPITACIONES;
+import static com.app.core.jooq.generated.Tables.PRECIPITACIONES;
+import static com.app.core.jooq.generated.tables.EstacionesMeteorologicas.ESTACIONES_METEOROLOGICAS;
+import static org.jooq.impl.DSL.excluded;
+
 @Service
 public class HistoricoPrecipitacionesService {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private HistoricoPrecipitacionesRepository historicoPrecipitacionesRepository;
-
-    @Autowired
-    private EstacionesMeteorologicasRepository estacionesMeteorologicasRepository;
-
-    @Autowired
-    private PrecipitacionesRepository precipitacionesRepository;
+    private DSLContext dslContext;
 
     public HistoricoPrecipitacionesService() throws NoSuchAlgorithmException, KeyManagementException {
         this.configureSSL();
@@ -176,33 +169,38 @@ public class HistoricoPrecipitacionesService {
         System.out.println("Guardado de datos realizado correctamente en Tabla HistoricoPrecipitaciones");
     }
 
-    private void insertarHistoricoPrecipitacionesList(List<HistoricoPrecipitaciones> historicoPrecipitacionesList) {
-        String sql = "INSERT INTO historico_precipitaciones (indicativo, nombre, valor_24h, fecha_registro, tmax, tmin, tmed) " +
-                " VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                " ON CONFLICT (indicativo, fecha_registro) DO UPDATE SET " +
-                " valor_24h = EXCLUDED.valor_24h, " +
-                " tmax = EXCLUDED.tmax, " +
-                " tmin = EXCLUDED.tmin, " +
-                " tmed = EXCLUDED.tmed";
+    private void insertarHistoricoPrecipitacionesList(List<HistoricoPrecipitaciones> lista) {
+        // Definimos la query base
+        var query = dslContext.insertInto(HISTORICO_PRECIPITACIONES)
+                .columns(
+                        HISTORICO_PRECIPITACIONES.INDICATIVO,
+                        HISTORICO_PRECIPITACIONES.NOMBRE,
+                        HISTORICO_PRECIPITACIONES.VALOR_24H,
+                        HISTORICO_PRECIPITACIONES.FECHA_REGISTRO,
+                        HISTORICO_PRECIPITACIONES.TMAX,
+                        HISTORICO_PRECIPITACIONES.TMIN,
+                        HISTORICO_PRECIPITACIONES.TMED
+                )
+                .values((String) null, null, null, null, null, null, null)
+                .onConflict(HISTORICO_PRECIPITACIONES.INDICATIVO, HISTORICO_PRECIPITACIONES.FECHA_REGISTRO)
+                .doUpdate()
+                .set(HISTORICO_PRECIPITACIONES.VALOR_24H, excluded(HISTORICO_PRECIPITACIONES.VALOR_24H))
+                .set(HISTORICO_PRECIPITACIONES.TMAX, excluded(HISTORICO_PRECIPITACIONES.TMAX))
+                .set(HISTORICO_PRECIPITACIONES.TMIN, excluded(HISTORICO_PRECIPITACIONES.TMIN))
+                .set(HISTORICO_PRECIPITACIONES.TMED, excluded(HISTORICO_PRECIPITACIONES.TMED));
 
-        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                HistoricoPrecipitaciones h = historicoPrecipitacionesList.get(i);
-                ps.setString(1, h.getIndicativo());
-                ps.setString(2, h.getNombre());
-                ps.setObject(3, h.getValor24h());
-                ps.setTimestamp(4, h.getFechaRegistro());
-                ps.setObject(5, h.getTmax());
-                ps.setObject(6, h.getTmin());
-                ps.setObject(7, h.getTmed());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return historicoPrecipitacionesList.size();
-            }
-        });
+        // Ejecución en Batch
+        dslContext.batch(query)
+                .bind(lista.stream().map(h -> new Object[] {
+                        h.getIndicativo(),
+                        h.getNombre(),
+                        h.getValor24h(),
+                        h.getFechaRegistro(),
+                        h.getTmax(),
+                        h.getTmin(),
+                        h.getTmed()
+                }).toArray(Object[][]::new))
+                .execute();
     }
 
     private List<EstacionesDTO> obtenerEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
@@ -272,24 +270,24 @@ public class HistoricoPrecipitacionesService {
     }
 
     public void insertarHistoricoPrecipitacionesChs(LocalDate localDateFechaInicio, LocalDate localDateFechaFin) throws FunctionalExceptions {
-
         OkHttpClient client = new OkHttpClient();
-
-        // Definimos el formateador una sola vez fuera del bucle para mejor rendimiento
         DateTimeFormatter fmtCompacto = DateTimeFormatter.ofPattern("yyyyMMdd");
-
         List<HistoricoPrecipitaciones> historicoPrecipitacionesList = new ArrayList<>();
 
-        while (localDateFechaInicio.isBefore(localDateFechaFin) || localDateFechaInicio.isEqual(localDateFechaFin)) {
+        // 1. CARGA PREVIA: Obtenemos todas las estaciones de una sola vez
+        Map<String, EstacionesMeteorologicasRecord> mapaEstaciones = dslContext
+                .selectFrom(ESTACIONES_METEOROLOGICAS)
+                .fetchMap(ESTACIONES_METEOROLOGICAS.INDICATIVO);
 
-            Timestamp timestampFechaInicio = Timestamp.from(localDateFechaInicio.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDate current = localDateFechaInicio;
 
-            System.out.println("Se comienza a extrar datos del pdf para la fecha: " +timestampFechaInicio);
+        while (!current.isAfter(localDateFechaFin)) {
+            // Convertimos a Timestamp (o LocalDateTime si tu jOOQ lo prefiere)
+            Timestamp timestampFechaInicio = Timestamp.valueOf(current.atStartOfDay());
 
-            String anoHidrologico = obtenerAnoHidrologico(localDateFechaInicio);
-
-            // Usamos el formato yyyyMMdd para la URL (ej: 20251201)
-            String fechaUrl = localDateFechaInicio.format(fmtCompacto);
+            System.out.println("Extrayendo datos PDF para: " + timestampFechaInicio);
+            String anoHidrologico = obtenerAnoHidrologico(current);
+            String fechaUrl = current.format(fmtCompacto);
 
             try {
                 Request request = new Request.Builder()
@@ -297,53 +295,46 @@ public class HistoricoPrecipitacionesService {
                         .get()
                         .addHeader("cache-control", "no-cache")
                         .build();
-                try (Response responseEstaciones = client.newCall(request).execute()) {
-                    if (responseEstaciones.isSuccessful() && responseEstaciones.body() != null) {
-                        // 1. Obtenemos el InputStream desde el cuerpo de la respuesta
-                        try (InputStream inputStream = responseEstaciones.body().byteStream();
-                             BufferedInputStream bufferedIn = new BufferedInputStream(inputStream);
-                             PDDocument document = PDDocument.load(bufferedIn)) {
 
-                            // 2. Usamos PDFTextStripper para extraer el texto
-                            PDFTextStripper stripper = new PDFTextStripper();
-                            String contenidoPdf = stripper.getText(document);
+                try (Response response = client.newCall(request).execute()) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        try (InputStream inputStream = response.body().byteStream();
+                             PDDocument document = PDDocument.load(new BufferedInputStream(inputStream))) {
 
-                            Map<String, Double> mapIndicativoPrecipitacionDiaria = extraerTotalesDesdePDF(contenidoPdf);
+                            String contenidoPdf = new PDFTextStripper().getText(document);
+                            Map<String, Double> mapPreci = extraerTotalesDesdePDF(contenidoPdf);
 
-                            mapIndicativoPrecipitacionDiaria.entrySet().stream().forEach(indicativoPreciDiaria -> {
-                                EstacionesMeteorologicas estacionMeteo = estacionesMeteorologicasRepository.findByIndicativo(indicativoPreciDiaria.getKey());
+                            // 2. PROCESAMIENTO EN MEMORIA: Mucho más rápido
+                            mapPreci.forEach((indicativo, valor) -> {
+                                EstacionesMeteorologicasRecord estacion = mapaEstaciones.get(indicativo);
 
-                                if (estacionMeteo != null) {
-                                    HistoricoPrecipitaciones historicoPrecipitaciones = new HistoricoPrecipitaciones();
-                                    historicoPrecipitaciones.setIndicativo(estacionMeteo.getIndicativo());
-                                    historicoPrecipitaciones.setNombre(estacionMeteo.getNombre());
-                                    historicoPrecipitaciones.setValor24h(indicativoPreciDiaria.getValue());
-                                    historicoPrecipitaciones.setFechaRegistro(timestampFechaInicio);
-                                    historicoPrecipitacionesList.add(historicoPrecipitaciones);
+                                if (estacion != null) {
+                                    HistoricoPrecipitaciones h = new HistoricoPrecipitaciones();
+                                    h.setIndicativo(estacion.getIndicativo());
+                                    h.setNombre(estacion.getNombre());
+                                    h.setValor24h(valor);
+                                    h.setFechaRegistro(timestampFechaInicio);
+                                    historicoPrecipitacionesList.add(h);
                                 }
                             });
-                        } catch (IOException e) {
-                            System.err.println("Error al procesar el PDF: " + e.getMessage());
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println("Error en la response obteniendo el informe diario de precipitaciones del SAIH CHS: " +e);
-                    Exceptions.EMB_E_0011.lanzarExcepcionWithParams(e.getMessage().concat("Error en la response obteniendo el informe diario de precipitaciones del SAIH CHS"));
+                    System.err.println("Error procesando PDF del día " + current + ": " + e.getMessage());
+                    // Aquí podrías decidir si continuar con el siguiente día o lanzar excepción
                 }
-
             } catch (Exception e) {
-                Exceptions.EMB_E_0010.lanzarExcepcionWithParams(e.getMessage().concat("error en la request obteniendo el informe diario de precipitaciones del SAIH CHS"));
+                Exceptions.EMB_E_0010.lanzarExcepcionWithParams("Error en request SAIH: " + e.getMessage());
             }
 
-
-            // HACER AQUÍ: Ejecutar la llamada (client.newCall(request).execute()...)
-
-            // AVANZAR UN DÍA: Reasignamos la variable para evitar bucle infinito
-            localDateFechaInicio = localDateFechaInicio.plusDays(1);
+            current = current.plusDays(1);
         }
 
-        this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
-        System.out.println("Valores Insertados en tabla Historico Precipitaciones");
+        // 3. INSERCIÓN BATCH: Usando el método que creamos antes
+        if (!historicoPrecipitacionesList.isEmpty()) {
+            this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
+            System.out.println("Insertados " + historicoPrecipitacionesList.size() + " registros.");
+        }
     }
 
     public LocalDate parseStringToLocalDate(String fecha, DateTimeFormatter formatter) {
@@ -422,34 +413,31 @@ public class HistoricoPrecipitacionesService {
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
-    public List<AcumuladoEstacion> obtenerValoresPrecipitacionesAcumulados(String rango) {
-
-        return historicoPrecipitacionesRepository.findAcumuladosDinamicos(rango);
-    }
-
-    public Timestamp fechaStringToTimestamp(String fechaStr) {
-        // 1. Definimos el formato de 8 dígitos que recibes
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-        // 2. Parseamos como LocalDate (esto NO fallará porque solo busca la fecha)
-        LocalDate fecha = parseStringToLocalDate(fechaStr, formatter);
-
-        // 3. Convertimos a Timestamp asignando las 00:00:00 horas
-        return Timestamp.valueOf(fecha.atStartOfDay());
-    }
-
     public void insertarHistoricoPrecipitacionesChsFromPrecipitaciones(int days) {
 
-        List<PrecipitacionLastDays> precipitacionesList = precipitacionesRepository.findPrecipitacionesLastDays(days);
+        java.time.LocalDateTime fechaLimite = java.time.LocalDateTime.now().minusDays(days);
 
-        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = precipitacionesList.stream()
-                .map(prec -> new HistoricoPrecipitaciones(
-                        java.sql.Timestamp.valueOf(prec.getFechaActualizacion()),
-                        prec.getNombre(),
-                        prec.getIndicativo(),
-                        prec.getMaximo24h()
-                ))
-                .toList();
+        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = dslContext
+                .select(
+                        PRECIPITACIONES.INDICATIVO,
+                        PRECIPITACIONES.NOMBRE,
+                        DSL.trunc(PRECIPITACIONES.FECHA_ACTUALIZACION, DatePart.DAY).as("fechaActualizacion"),
+                        DSL.max(PRECIPITACIONES.PRECIPITACION_24H).as("maximo24h")
+                )
+                .from(PRECIPITACIONES)
+                .where(PRECIPITACIONES.FECHA_ACTUALIZACION.greaterOrEqual(fechaLimite))
+                .groupBy(
+                        PRECIPITACIONES.INDICATIVO,
+                        PRECIPITACIONES.NOMBRE,
+                        DSL.trunc(PRECIPITACIONES.FECHA_ACTUALIZACION, DatePart.DAY)
+                )
+                .orderBy(DSL.field("fechaActualizacion").desc(), PRECIPITACIONES.INDICATIVO.asc())
+                .fetch(record -> new HistoricoPrecipitaciones(
+                        record.get("fechaActualizacion", java.sql.Timestamp.class),
+                        record.get(PRECIPITACIONES.NOMBRE),
+                        record.get(PRECIPITACIONES.INDICATIVO),
+                        record.get("maximo24h", Double.class)
+                ));
 
         this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");

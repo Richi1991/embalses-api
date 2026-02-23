@@ -2,7 +2,6 @@ package com.app.modules.weather.service;
 
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.repository.HistoricoPrecipitacionesRepository;
 import com.app.modules.weather.dao.EstacionesDAO;
 import com.app.modules.weather.dto.EstacionesDTO;
 import okhttp3.OkHttpClient;
@@ -21,9 +20,6 @@ public class EstacionesService {
 
     @Autowired
     private EstacionesDAO estacionesDAO;
-
-    @Autowired
-    private HistoricoPrecipitacionesRepository historicoPrecipitacionesRepository;
 
     public void insertarEstacionesAemetPorProvincia(String provincia, String apiKeyAemet) throws FunctionalExceptions {
         List<EstacionesDTO> estacionesAemetDTOListFilterByProvincia = obtenerEstacionesAemetPorProvincia(provincia, apiKeyAemet);

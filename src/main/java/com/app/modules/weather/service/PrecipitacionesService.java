@@ -1,7 +1,6 @@
 package com.app.modules.weather.service;
 
 import com.app.core.model.Precipitaciones;
-import com.app.core.repository.PrecipitacionesRepository;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -31,13 +30,7 @@ import static com.app.core.jooq.generated.Tables.PRECIPITACIONES;
 public class PrecipitacionesService {
 
     @Autowired
-    private PrecipitacionesRepository precipitacionesRepository;
-
-    @Autowired
-    private EstacionesService estacionesService;
-
-    @Autowired
-    private DSLContext dsl;
+    private DSLContext dslContext;
 
     private double limpiarValor(String valor) {
         try {
@@ -49,7 +42,7 @@ public class PrecipitacionesService {
     }
 
     public List<EstacionesDTO> obtenerMapaRapido() {
-        return dsl.select(
+        return dslContext.select(
                         // Seleccionamos los campos de la tabla generada por jOOQ
                         ESTACIONES_METEOROLOGICAS.NOMBRE,
                         ESTACIONES_METEOROLOGICAS.INDICATIVO,
@@ -169,29 +162,35 @@ public class PrecipitacionesService {
     }
 
     private void guardarLote(List<EstacionesDTO> dtos) {
-        List<Precipitaciones> entidades = dtos.stream().map(dto -> {
-            Precipitaciones p = new Precipitaciones();
+        // 1. Definimos la estructura de la consulta
+        var query = dslContext.insertInto(PRECIPITACIONES)
+                .columns(
+                        PRECIPITACIONES.INDICATIVO,            // Parte de la PK
+                        PRECIPITACIONES.FECHA_ACTUALIZACION,   // Parte de la PK
+                        PRECIPITACIONES.NOMBRE,
+                        PRECIPITACIONES.PRECIPITACION_1H,
+                        PRECIPITACIONES.PRECIPITACION_3H,
+                        PRECIPITACIONES.PRECIPITACION_6H,
+                        PRECIPITACIONES.PRECIPITACION_12H,
+                        PRECIPITACIONES.PRECIPITACION_24H
+                )
+                .values((String) null, null, null, null, null, null, null, null); // Placeholders
 
-            // 1. CREAR Y ASIGNAR EL ID COMPUESTO (Solución al error Null id)
-            com.app.core.model.PrecipitacioneId idCompuesto = new com.app.core.model.PrecipitacioneId();
-            idCompuesto.setIndicativo(dto.getIndicativo()); // Usamos el código de la estación
-            idCompuesto.setFechaActualizacion(dto.getFechaActualizacion());
+        // 2. Ejecutamos el batch mapeando los DTOs a un array de objetos
+        dslContext.batch(query)
+                .bind(dtos.stream().map(dto -> new Object[] {
+                        dto.getIndicativo(),
+                        dto.getFechaActualizacion(),
+                        dto.getNombre(),
+                        dto.getPrecipitacionesDTO().getPrecipitacion1h(),
+                        dto.getPrecipitacionesDTO().getPrecipitacion3h(),
+                        dto.getPrecipitacionesDTO().getPrecipitacion6h(),
+                        dto.getPrecipitacionesDTO().getPrecipitacion12h(),
+                        dto.getPrecipitacionesDTO().getPrecipitacion24h()
+                }).toArray(Object[][]::new))
+                .execute();
 
-            p.setId(idCompuesto);
-
-            // 2. RELLENAR EL RESTO DE DATOS
-            p.setNombre(dto.getNombre());
-            p.setPrecipitacion1h(dto.getPrecipitacionesDTO().getPrecipitacion1h());
-            p.setPrecipitacion3h(dto.getPrecipitacionesDTO().getPrecipitacion3h());
-            p.setPrecipitacion6h(dto.getPrecipitacionesDTO().getPrecipitacion6h());
-            p.setPrecipitacion12h(dto.getPrecipitacionesDTO().getPrecipitacion12h());
-            p.setPrecipitacion24h(dto.getPrecipitacionesDTO().getPrecipitacion24h());
-
-            return p;
-        }).collect(Collectors.toList());
-
-        precipitacionesRepository.saveAll(entidades);
-        System.out.println("Lote de " + entidades.size() + " registros guardado con éxito.");
+        System.out.println("Lote de " + dtos.size() + " registros guardado con éxito en jOOQ.");
     }
 
 }
