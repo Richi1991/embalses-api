@@ -19,7 +19,7 @@
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jooq.codegen.skip>false</jooq.codegen.skip>
+        <jooq.codegen.skip>true</jooq.codegen.skip>
 
         <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
         <db.user>none</db.user>
@@ -142,7 +142,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>target/generated-sources/jooq</source>
+                                <source>src/generated/jooq</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -183,7 +183,7 @@
                         </database>
                         <target>
                             <packageName>com.app.core.jooq.generated</packageName>
-                            <directory>target/generated-sources/jooq</directory>
+                            <directory>src/generated/jooq</directory>
                         </target>
                     </generator>
                 </configuration>
