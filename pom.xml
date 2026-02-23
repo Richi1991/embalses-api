@@ -18,7 +18,7 @@
         <java.version>17</java.version>
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <jooq.codegen.skip>false</jooq.codegen.skip>
         <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
         <db.user>none</db.user>
         <db.pass>none</db.pass>
@@ -142,7 +142,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <onError>WARN</onError>
+                    <skip>${jooq.codegen.skip}</skip>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <url>${db.url}</url>
