@@ -1,6 +1,5 @@
 package com.app.modules.weather.service;
 
-import com.app.core.model.Precipitaciones;
 import com.app.modules.weather.dto.EstacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.app.core.jooq.generated.Tables.ESTACIONES_METEOROLOGICAS;
 import static com.app.core.jooq.generated.Tables.PRECIPITACIONES;

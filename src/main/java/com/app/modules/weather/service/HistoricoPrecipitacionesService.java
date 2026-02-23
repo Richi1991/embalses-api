@@ -3,9 +3,8 @@ package com.app.modules.weather.service;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.core.jooq.generated.tables.records.EstacionesMeteorologicasRecord;
-import com.app.core.model.HistoricoPrecipitaciones;
-import com.app.core.repository.*;
 import com.app.modules.weather.dto.EstacionesDTO;
+import com.app.modules.weather.dto.HistoricoPrecipitacionesDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
 import com.app.modules.weather.dto.TemperaturasDTO;
 import okhttp3.OkHttpClient;
@@ -150,9 +149,9 @@ public class HistoricoPrecipitacionesService {
 
     public void insertarDatosClimatologicosAemetFilterByProvincia(List<EstacionesDTO> estacionesDTOListToInsert) {
 
-        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = estacionesDTOListToInsert.stream()
+        List<HistoricoPrecipitacionesDTO> historicoPrecipitacionesList = estacionesDTOListToInsert.stream()
                 .map(dto -> {
-                    HistoricoPrecipitaciones entidad = new HistoricoPrecipitaciones();
+                    HistoricoPrecipitacionesDTO entidad = new HistoricoPrecipitacionesDTO();
                     entidad.setIndicativo(dto.getIndicativo());
                     entidad.setNombre(dto.getNombre());
                     entidad.setValor24h(dto.getPrecipitacionesDTO() != null ? dto.getPrecipitacionesDTO().getPrecipitacion24h() : null);
@@ -169,7 +168,7 @@ public class HistoricoPrecipitacionesService {
         System.out.println("Guardado de datos realizado correctamente en Tabla HistoricoPrecipitaciones");
     }
 
-    private void insertarHistoricoPrecipitacionesList(List<HistoricoPrecipitaciones> lista) {
+    private void insertarHistoricoPrecipitacionesList(List<HistoricoPrecipitacionesDTO> lista) {
         // Definimos la query base
         var query = dslContext.insertInto(HISTORICO_PRECIPITACIONES)
                 .columns(
@@ -272,7 +271,7 @@ public class HistoricoPrecipitacionesService {
     public void insertarHistoricoPrecipitacionesChs(LocalDate localDateFechaInicio, LocalDate localDateFechaFin) throws FunctionalExceptions {
         OkHttpClient client = new OkHttpClient();
         DateTimeFormatter fmtCompacto = DateTimeFormatter.ofPattern("yyyyMMdd");
-        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = new ArrayList<>();
+        List<HistoricoPrecipitacionesDTO> historicoPrecipitacionesList = new ArrayList<>();
 
         // 1. CARGA PREVIA: Obtenemos todas las estaciones de una sola vez
         Map<String, EstacionesMeteorologicasRecord> mapaEstaciones = dslContext
@@ -309,7 +308,7 @@ public class HistoricoPrecipitacionesService {
                                 EstacionesMeteorologicasRecord estacion = mapaEstaciones.get(indicativo);
 
                                 if (estacion != null) {
-                                    HistoricoPrecipitaciones h = new HistoricoPrecipitaciones();
+                                    HistoricoPrecipitacionesDTO h = new HistoricoPrecipitacionesDTO();
                                     h.setIndicativo(estacion.getIndicativo());
                                     h.setNombre(estacion.getNombre());
                                     h.setValor24h(valor);
@@ -417,7 +416,7 @@ public class HistoricoPrecipitacionesService {
 
         java.time.LocalDateTime fechaLimite = java.time.LocalDateTime.now().minusDays(days);
 
-        List<HistoricoPrecipitaciones> historicoPrecipitacionesList = dslContext
+        List<HistoricoPrecipitacionesDTO> historicoPrecipitacionesList = dslContext
                 .select(
                         PRECIPITACIONES.INDICATIVO,
                         PRECIPITACIONES.NOMBRE,
@@ -432,12 +431,14 @@ public class HistoricoPrecipitacionesService {
                         DSL.trunc(PRECIPITACIONES.FECHA_ACTUALIZACION, DatePart.DAY)
                 )
                 .orderBy(DSL.field("fechaActualizacion").desc(), PRECIPITACIONES.INDICATIVO.asc())
-                .fetch(record -> new HistoricoPrecipitaciones(
-                        record.get("fechaActualizacion", java.sql.Timestamp.class),
-                        record.get(PRECIPITACIONES.NOMBRE),
-                        record.get(PRECIPITACIONES.INDICATIVO),
-                        record.get("maximo24h", Double.class)
-                ));
+                .fetch(record -> {
+                    HistoricoPrecipitacionesDTO dto = new HistoricoPrecipitacionesDTO();
+                    dto.setFechaRegistro(record.get("fechaActualizacion", Timestamp.class));
+                    dto.setNombre(record.get(PRECIPITACIONES.NOMBRE));
+                    dto.setIndicativo(record.get(PRECIPITACIONES.INDICATIVO));
+                    dto.setValor24h(record.get("maximo24h", Double.class));
+                    return dto;
+                });
 
         this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");
