@@ -19,9 +19,9 @@
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <db.url></db.url>
-        <db.user></db.user>
-        <db.pass></db.pass>
+        <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
+        <db.user>none</db.user>
+        <db.pass>none</db.pass>
     </properties>
 
     <dependencies>
@@ -150,6 +150,7 @@
                     </jdbc>
                     <generator>
                         <database>
+                            <onError>WARN</onError>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|(?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones</includes>
                             <inputSchema>public</inputSchema>
