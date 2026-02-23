@@ -142,6 +142,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <onError>WARN</onError>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <url>${db.url}</url>
@@ -149,7 +150,6 @@
                         <password>${db.pass}</password>
                     </jdbc>
                     <generator>
-                        <onError>WARN</onError>
                         <database>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|(?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones</includes>
