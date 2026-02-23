@@ -149,8 +149,8 @@
                         <password>${db.pass}</password>
                     </jdbc>
                     <generator>
+                        <onError>WARN</onError>
                         <database>
-                            <onError>WARN</onError>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|(?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones</includes>
                             <inputSchema>public</inputSchema>
