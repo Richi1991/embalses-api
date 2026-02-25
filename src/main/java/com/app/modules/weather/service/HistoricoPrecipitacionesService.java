@@ -3,10 +3,7 @@ package com.app.modules.weather.service;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.core.jooq.generated.tables.records.EstacionesMeteorologicasRecord;
-import com.app.modules.weather.dto.EstacionesDTO;
-import com.app.modules.weather.dto.HistoricoPrecipitacionesDTO;
-import com.app.modules.weather.dto.PrecipitacionesDTO;
-import com.app.modules.weather.dto.TemperaturasDTO;
+import com.app.modules.weather.dto.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -17,6 +14,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.jooq.DSLContext;
 import org.jooq.DatePart;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +25,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -448,5 +447,26 @@ public class HistoricoPrecipitacionesService {
 
         this.insertarHistoricoPrecipitacionesList(historicoPrecipitacionesList);
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");
+    }
+
+    public List<AcumuladoEstacionDTO> obtenerValoresPrecipitacionesAcumulados(Long rango) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate from = today.minusMonths(rango);
+        LocalDateTime todayDT = today.atTime(23, 59, 59);
+        LocalDateTime fromDT = from.atStartOfDay();
+
+        return dslContext.select(
+                        HISTORICO_PRECIPITACIONES.INDICATIVO,
+                        DSL.max(HISTORICO_PRECIPITACIONES.NOMBRE).as("nombre"),
+                        DSL.round(
+                                DSL.sum(HISTORICO_PRECIPITACIONES.VALOR_24H).cast(SQLDataType.NUMERIC), 0
+                        ).as("valorAcumulado")
+                )
+                .from(HISTORICO_PRECIPITACIONES)
+                .where(HISTORICO_PRECIPITACIONES.FECHA_REGISTRO.between(fromDT, todayDT))
+                .groupBy(HISTORICO_PRECIPITACIONES.INDICATIVO)
+                .orderBy(HISTORICO_PRECIPITACIONES.INDICATIVO)
+                .fetchInto(AcumuladoEstacionDTO.class);
     }
 }

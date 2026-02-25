@@ -1,7 +1,7 @@
 package com.app.modules.weather.controller;
 
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.core.repository.AcumuladoEstacion;
+import com.app.modules.weather.dto.AcumuladoEstacionDTO;
 import com.app.modules.weather.service.HistoricoPrecipitacionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,6 +103,11 @@ public class HistoricoPrecipitacionesController {
         }).start();
 
         return ResponseEntity.ok("Insercción historico precipitaciones chs from precipitaciones iniciada en background");
+    }
+
+    @GetMapping("/obtener_valores_precipitaciones_acumulados/{rango}")
+    public List<AcumuladoEstacionDTO> obtenerValoresPrecipitacionesAcumulados(@PathVariable(value ="rango") Long rango) {
+        return historicoPrecipitacionesService.obtenerValoresPrecipitacionesAcumulados(rango);
     }
 
 }
