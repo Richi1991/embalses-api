@@ -59,7 +59,10 @@ public class PrecipitacionesService {
 
     public WebDriver createDriver() {
         // 1. Setup automático del driver compatible
-        WebDriverManager.chromedriver().setup();
+        WebDriverManager.chromedriver()
+                .driverVersion("145.0.7632.117")
+                .cachePath("/root/.cache/selenium")
+                .setup();
 
         ChromeOptions options = new ChromeOptions();
 

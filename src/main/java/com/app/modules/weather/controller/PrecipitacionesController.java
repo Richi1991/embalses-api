@@ -5,7 +5,6 @@ import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.weather.service.PrecipitacionesService;
 import com.app.modules.weather.dto.EstacionesDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
