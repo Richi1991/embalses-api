@@ -46,6 +46,10 @@ public class PrecipitacionesService {
                         ESTACIONES_METEOROLOGICAS.INDICATIVO,
                         ESTACIONES_METEOROLOGICAS.LATITUD,
                         ESTACIONES_METEOROLOGICAS.LONGITUD,
+                        PRECIPITACIONES.PRECIPITACION_1H,
+                        PRECIPITACIONES.PRECIPITACION_3H,
+                        PRECIPITACIONES.PRECIPITACION_6H,
+                        PRECIPITACIONES.PRECIPITACION_12H,
                         PRECIPITACIONES.PRECIPITACION_24H,
                         PRECIPITACIONES.FECHA_ACTUALIZACION
                 )
