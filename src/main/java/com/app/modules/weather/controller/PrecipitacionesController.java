@@ -20,12 +20,6 @@ public class PrecipitacionesController {
     @Autowired
     private PrecipitacionesService precipitacionesService;
 
-    @Value("${CRON_JOB_KEY}")
-    private String cronKey;
-
-    @Value("${API_KEY_AEMET}")
-    private String apiKeyAemet;
-
     @GetMapping("/insert_precipitaciones_last_value")
     public ResponseEntity<String> extraerAndGuardarPrecipitacionesRealTime() {
         new Thread(() -> precipitacionesService.getAndSavePrecipitacionesRealTime()).start();
