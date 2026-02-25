@@ -1,9 +1,15 @@
+# Stage 1: Build
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
+# Primero solo el pom.xml para cachear dependencias
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+# Luego el código fuente
+COPY src ./src
+RUN mvn package -DskipTests -q
 
-FROM eclipse-temurin:17-jdk-jammy
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jre-jammy
 COPY _.chsegura.es.crt /usr/local/share/ca-certificates/chs_root.crt
 RUN apt-get update && apt-get install -y \
     wget gnupg unzip curl libnss3 libxss1 libasound2 \
@@ -21,8 +27,12 @@ RUN apt-get update && apt-get install -y \
         -storepass changeit \
         -noprompt \
     && rm -rf /var/lib/apt/lists/*
-
 ENV CHROME_BIN=/usr/bin/google-chrome-stable
 COPY --from=build /app/target/embalseschs-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+  "-XX:TieredStopAtLevel=1", \
+  "-Xss512k", \
+  "-XX:+UseSerialGC", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-jar", "/app.jar"]
