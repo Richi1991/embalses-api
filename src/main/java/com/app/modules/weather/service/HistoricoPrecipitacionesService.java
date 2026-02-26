@@ -450,11 +450,11 @@ public class HistoricoPrecipitacionesService {
         System.out.println("Valores Insertados en tabla Historico Precipitaciones");
     }
 
-    public List<AcumuladoEstacionDTO> obtenerValoresPrecipitacionesAcumulados(Long rango) {
+    public List<AcumuladoEstacionDTO> obtenerValoresPrecipitacionesAcumulados(RangoTemporalEnum rango) {
 
-        LocalDate today = LocalDate.now();
-        LocalDate from = today.minusMonths(rango);
-        LocalDateTime todayDT = today.atTime(23, 59, 59);
+        LocalDate hoy = LocalDate.now();
+        LocalDate from = rango.calcularFechaDesde(hoy);
+        LocalDateTime todayDT = hoy.atTime(23, 59, 59);
         LocalDateTime fromDT = from.atStartOfDay();
 
         return dslContext.select(
