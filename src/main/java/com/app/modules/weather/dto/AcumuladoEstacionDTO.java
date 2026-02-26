@@ -17,9 +17,9 @@ public class AcumuladoEstacionDTO {
     @JsonProperty("valorAcumulado")
     private Double valorAcumulado;
 
-    @JsonProperty("lng")
-    private Double lng;
+    @JsonProperty("longitud")
+    private Double longitud;
 
-    @JsonProperty("lat")
-    private Double lat;
+    @JsonProperty("latitud")
+    private Double latitud;
 }

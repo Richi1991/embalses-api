@@ -2,6 +2,7 @@ package com.app.modules.weather.service;
 
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
+import com.app.core.jooq.generated.Tables;
 import com.app.core.jooq.generated.tables.records.EstacionesMeteorologicasRecord;
 import com.app.modules.weather.dto.*;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -457,16 +458,24 @@ public class HistoricoPrecipitacionesService {
         LocalDateTime fromDT = from.atStartOfDay();
 
         return dslContext.select(
-                        HISTORICO_PRECIPITACIONES.INDICATIVO,
-                        DSL.max(HISTORICO_PRECIPITACIONES.NOMBRE).as("nombre"),
+                        ESTACIONES_METEOROLOGICAS.INDICATIVO,
+                        DSL.max(ESTACIONES_METEOROLOGICAS.NOMBRE).as("nombre"),
                         DSL.round(
                                 DSL.sum(HISTORICO_PRECIPITACIONES.VALOR_24H).cast(SQLDataType.NUMERIC), 0
-                        ).as("valorAcumulado")
+                        ).as("valorAcumulado"),
+                        ESTACIONES_METEOROLOGICAS.LATITUD,
+                        ESTACIONES_METEOROLOGICAS.LONGITUD
                 )
-                .from(HISTORICO_PRECIPITACIONES)
-                .where(HISTORICO_PRECIPITACIONES.FECHA_REGISTRO.between(fromDT, todayDT))
-                .groupBy(HISTORICO_PRECIPITACIONES.INDICATIVO)
-                .orderBy(HISTORICO_PRECIPITACIONES.INDICATIVO)
+                .from(ESTACIONES_METEOROLOGICAS)
+                .leftJoin(HISTORICO_PRECIPITACIONES)
+                .on(ESTACIONES_METEOROLOGICAS.INDICATIVO.eq(HISTORICO_PRECIPITACIONES.INDICATIVO)
+                        .and(HISTORICO_PRECIPITACIONES.FECHA_REGISTRO.between(fromDT, todayDT)))
+                .groupBy(
+                        ESTACIONES_METEOROLOGICAS.INDICATIVO,
+                        ESTACIONES_METEOROLOGICAS.LATITUD,
+                        ESTACIONES_METEOROLOGICAS.LONGITUD
+                )
+                .orderBy(ESTACIONES_METEOROLOGICAS.INDICATIVO)
                 .fetchInto(AcumuladoEstacionDTO.class);
     }
 }
