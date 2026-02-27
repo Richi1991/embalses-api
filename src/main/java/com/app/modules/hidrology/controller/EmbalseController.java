@@ -21,28 +21,6 @@ public class EmbalseController {
     private EmbalseService embalseService;
 
     /**
-     * se hace un get desde cronJob cada 10 min para despertar al back de render
-     * @param intervalo
-     * @return
-     * @throws FunctionalExceptions
-     */
-    @GetMapping("/top-movimientos-cronjob")
-    public ResponseEntity<AtomicReference<List<EmbalseDTO>>> getTopMovimientosCronJob(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
-
-        AtomicReference<List<EmbalseDTO>> embalseDTOList = new AtomicReference<>(new ArrayList<>());
-
-        new Thread(() -> {
-            try {
-                embalseDTOList.set(embalseService.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo));
-            } catch (FunctionalExceptions e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
-
-        return ResponseEntity.ok(embalseDTOList);
-    }
-
-    /**
      * Primero obtiene los ultimos datos de la web de la chs y los guarda en la tabla lecturas_embalses
      * Después obtiene las Ultimas Lecturas Con Variacion Por Intervalo de fechas de la tabla lecturas_embalses
      *
@@ -90,8 +68,12 @@ public class EmbalseController {
         return embalseService.obtenerHistoricoEmbalsePorIdEmbalse(idEmbalse);
     }
 
+    /**
+     * Obtiene el último valor de volumen de los embalses de la cuenca del segura y sus coordendas
+     * @return
+     */
     @GetMapping("/get_embalses_last_value_and_position")
-    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() {
+    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() throws FunctionalExceptions {
         return embalseService.getEmbalsesLastValueAndPosition();
     }
 

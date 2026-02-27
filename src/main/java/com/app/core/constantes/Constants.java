@@ -13,6 +13,17 @@ public class Constants {
     public static final String EMB0009 = "EMB_E_0009";
     public static final String EMB0010 = "EMB_E_0010";
     public static final String EMB0011 = "EMB_E_0011";
+    public static final String EMB0012 = "EMB_E_0012";
+    public static final String EMB0013 = "EMB_E_0013";
+    public static final String EMB0014 = "EMB_E_0014";
+    public static final String EMB0015 = "EMB_E_0015";
+    public static final String EMB0016 = "EMB_E_0016";
+    public static final String EMB0017 = "EMB_E_0017";
+    public static final String EMB0018 = "EMB_E_0018";
+    public static final String EMB0019 = "EMB_E_0019";
+    public static final String EMB0020 = "EMB_E_0020";
+    public static final String EMB0021 = "EMB_E_0021";
+    public static final String EMB0022 = "EMB_E_0022";
 
     public static final String UN_DIA = "1 day";
 
@@ -21,9 +32,4 @@ public class Constants {
 
     public static final Double VOLUMEN_MAXIMO_CUENCA_SEGURA = 1140.0;
     public static final String AEMET = "aemet";
-    public static final String CHS = "chs";
-    public static final String suremet = "suremet";
-    public static final String COMA = ",";
-    public static final String PUNTO = ".";
-    public static final String ES_NUMERO = "^-?\\d+([.,]\\d+)?$";
 }

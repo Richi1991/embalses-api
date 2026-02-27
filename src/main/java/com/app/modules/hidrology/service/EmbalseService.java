@@ -144,17 +144,21 @@ public class EmbalseService {
         }
     }
 
+    /**
+     * Obtiene las variaciones de los embalses, se puede poner un intervalo distinto a un día (valor por defecto)
+     * @param intervalo
+     * @return
+     * @throws FunctionalExceptions
+     */
     public List<EmbalseDTO> obtenerUltimasLecturasConVariacionPorIntervalo(String intervalo) throws FunctionalExceptions {
-
-        List<EmbalseDTO> lista = new ArrayList<>();
-        try {
-            lista = embalseDAO.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo);
-        } catch (Exception e) {
-            Exceptions.EMB_E_0003.lanzarExcepcionCausada(e);
-        }
-        return lista;
+        return embalseDAO.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo);
     }
 
+    /**
+     * Obtiene el historico de la cuenca del segura
+     * @return
+     * @throws FunctionalExceptions
+     */
     public List<HistoricoCuencaDTO> getHistoricoCuencaSegura() throws FunctionalExceptions {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA);
     }
@@ -167,7 +171,7 @@ public class EmbalseService {
         return embalseDAO.getHistoricoCuencaSeguraList(Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
     }
 
-    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() {
+    public List<EmbalseDTO> getEmbalsesLastValueAndPosition() throws FunctionalExceptions {
         return embalseDAO.getEmbalsesLastValueAndPosition();
     }
 

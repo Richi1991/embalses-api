@@ -14,7 +14,11 @@ public enum Exceptions {
     EMB_E_0008(Constants.EMB0008, "Ha habido un error obteniendo las estaciones meteorologicas"),
     EMB_E_0009(Constants.EMB0009, "Ha habido un error obteniendo las estaciones meteorologicas y sus precipitaciones"),
     EMB_E_0010(Constants.EMB0010, "Error en la request %s"),
-    EMB_E_0011(Constants.EMB0011, "Error en la response %s");
+    EMB_E_0011(Constants.EMB0011, "Error en la response %s"),
+    EMB_E_0012(Constants.EMB0012, "Ha habido un error obteniendo el top movimientos de los embalses %s"),
+    EMB_E_0013(Constants.EMB0013, "Ha habido un error obteniendo el historico de la cuenca del segura de la tabla: %s"),
+    EMB_E_0014(Constants.EMB0014, "Ha habido un error obteniendo el historico de embalse por id de embalse: %s"),
+    EMB_E_0015(Constants.EMB0015, "Ha habido un error obteniendo el último valor de volumen de los embalses de la cuenca del segura y sus coordenadas: %s");
 
     private String codigoError;
     private String descripcionError;

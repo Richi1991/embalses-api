@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 @Configuration
 public class JooqConfig {
 
-    @Bean
+
     public DataSourceConnectionProvider connectionProvider(DataSource dataSource) {
         return new DataSourceConnectionProvider(new TransactionAwareDataSourceProxy(dataSource));
     }
