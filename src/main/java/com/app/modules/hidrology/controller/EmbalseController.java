@@ -4,10 +4,13 @@ import com.app.modules.hidrology.dto.EmbalseDTO;
 import com.app.modules.hidrology.dto.HistoricoCuencaDTO;
 import com.app.core.exceptions.FunctionalExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.app.modules.hidrology.service.EmbalseService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping("/api/embalses")
@@ -16,6 +19,28 @@ public class EmbalseController {
 
     @Autowired
     private EmbalseService embalseService;
+
+    /**
+     * se hace un get desde cronJob cada 10 min para despertar al back de render
+     * @param intervalo
+     * @return
+     * @throws FunctionalExceptions
+     */
+    @GetMapping("/top-movimientos-cronjob")
+    public ResponseEntity<AtomicReference<List<EmbalseDTO>>> getTopMovimientosCronJob(@RequestParam(value = "intervalo", defaultValue = "1 day") String intervalo) throws FunctionalExceptions {
+
+        AtomicReference<List<EmbalseDTO>> embalseDTOList = new AtomicReference<>(new ArrayList<>());
+
+        new Thread(() -> {
+            try {
+                embalseDTOList.set(embalseService.obtenerUltimasLecturasConVariacionPorIntervalo(intervalo));
+            } catch (FunctionalExceptions e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        return ResponseEntity.ok(embalseDTOList);
+    }
 
     /**
      * Primero obtiene los ultimos datos de la web de la chs y los guarda en la tabla lecturas_embalses
