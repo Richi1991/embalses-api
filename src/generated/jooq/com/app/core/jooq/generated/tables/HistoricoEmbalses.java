@@ -4,9 +4,12 @@
 package com.app.core.jooq.generated.tables;
 
 
+import com.app.core.jooq.generated.Keys;
 import com.app.core.jooq.generated.Public;
 import com.app.core.jooq.generated.tables.records.HistoricoEmbalsesRecord;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.jooq.Condition;
@@ -19,8 +22,11 @@ import org.jooq.Schema;
 import org.jooq.Select;
 import org.jooq.Stringly;
 import org.jooq.Table;
+import org.jooq.TableField;
 import org.jooq.TableOptions;
+import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -44,6 +50,21 @@ public class HistoricoEmbalses extends TableImpl<HistoricoEmbalsesRecord> {
     public Class<HistoricoEmbalsesRecord> getRecordType() {
         return HistoricoEmbalsesRecord.class;
     }
+
+    /**
+     * The column <code>public.historico_embalses.nombre</code>.
+     */
+    public final TableField<HistoricoEmbalsesRecord, String> NOMBRE = createField(DSL.name("nombre"), SQLDataType.VARCHAR(255).nullable(false), this, "");
+
+    /**
+     * The column <code>public.historico_embalses.hm3_anterior</code>.
+     */
+    public final TableField<HistoricoEmbalsesRecord, BigDecimal> HM3_ANTERIOR = createField(DSL.name("hm3_anterior"), SQLDataType.NUMERIC(10, 2).nullable(false), this, "");
+
+    /**
+     * The column <code>public.historico_embalses.fecha_actualizacion</code>.
+     */
+    public final TableField<HistoricoEmbalsesRecord, LocalDateTime> FECHA_ACTUALIZACION = createField(DSL.name("fecha_actualizacion"), SQLDataType.LOCALDATETIME(6).defaultValue(DSL.field(DSL.raw("CURRENT_TIMESTAMP"), SQLDataType.LOCALDATETIME)), this, "");
 
     private HistoricoEmbalses(Name alias, Table<HistoricoEmbalsesRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
@@ -77,6 +98,11 @@ public class HistoricoEmbalses extends TableImpl<HistoricoEmbalsesRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
+    }
+
+    @Override
+    public UniqueKey<HistoricoEmbalsesRecord> getPrimaryKey() {
+        return Keys.HISTORICO_EMBALSES_PKEY;
     }
 
     @Override

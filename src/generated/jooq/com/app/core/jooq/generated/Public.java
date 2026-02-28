@@ -11,6 +11,7 @@ import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
+import com.app.core.jooq.generated.tables.LecturaCaucesDiaria;
 import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
@@ -73,6 +74,11 @@ public class Public extends SchemaImpl {
     public final HistoricoPrecipitaciones HISTORICO_PRECIPITACIONES = HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES;
 
     /**
+     * historico de los cauces de la cuenca del segura
+     */
+    public final LecturaCaucesDiaria LECTURA_CAUCES_DIARIA = LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA;
+
+    /**
      * Tabla donde se guardan los valores horarios de las lecturas de los
      * caudales en los distintos cauces de la CHS
      */
@@ -111,6 +117,7 @@ public class Public extends SchemaImpl {
             HistoricoCuencaSeguraDiario.HISTORICO_CUENCA_SEGURA_DIARIO,
             HistoricoEmbalses.HISTORICO_EMBALSES,
             HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES,
+            LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA,
             LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA,
             LecturasEmbalses.LECTURAS_EMBALSES,
             Precipitaciones.PRECIPITACIONES

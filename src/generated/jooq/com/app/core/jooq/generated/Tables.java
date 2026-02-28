@@ -11,6 +11,7 @@ import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
+import com.app.core.jooq.generated.tables.LecturaCaucesDiaria;
 import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
@@ -57,6 +58,11 @@ public class Tables {
      * The table <code>public.historico_precipitaciones</code>.
      */
     public static final HistoricoPrecipitaciones HISTORICO_PRECIPITACIONES = HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES;
+
+    /**
+     * historico de los cauces de la cuenca del segura
+     */
+    public static final LecturaCaucesDiaria LECTURA_CAUCES_DIARIA = LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA;
 
     /**
      * Tabla donde se guardan los valores horarios de las lecturas de los

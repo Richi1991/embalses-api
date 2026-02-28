@@ -4,13 +4,17 @@
 package com.app.core.jooq.generated.tables;
 
 
+import com.app.core.jooq.generated.Keys;
 import com.app.core.jooq.generated.Public;
 import com.app.core.jooq.generated.tables.records.HistoricoCuencaSeguraDiarioRecord;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
@@ -19,8 +23,11 @@ import org.jooq.Schema;
 import org.jooq.Select;
 import org.jooq.Stringly;
 import org.jooq.Table;
+import org.jooq.TableField;
 import org.jooq.TableOptions;
+import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
@@ -45,6 +52,35 @@ public class HistoricoCuencaSeguraDiario extends TableImpl<HistoricoCuencaSegura
     public Class<HistoricoCuencaSeguraDiarioRecord> getRecordType() {
         return HistoricoCuencaSeguraDiarioRecord.class;
     }
+
+    /**
+     * The column <code>public.historico_cuenca_segura_diario.id</code>.
+     */
+    public final TableField<HistoricoCuencaSeguraDiarioRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
+
+    /**
+     * The column
+     * <code>public.historico_cuenca_segura_diario.volumen_total</code>.
+     */
+    public final TableField<HistoricoCuencaSeguraDiarioRecord, BigDecimal> VOLUMEN_TOTAL = createField(DSL.name("volumen_total"), SQLDataType.NUMERIC(10, 3), this, "");
+
+    /**
+     * The column
+     * <code>public.historico_cuenca_segura_diario.porcentaje_total</code>.
+     */
+    public final TableField<HistoricoCuencaSeguraDiarioRecord, BigDecimal> PORCENTAJE_TOTAL = createField(DSL.name("porcentaje_total"), SQLDataType.NUMERIC(5, 2), this, "");
+
+    /**
+     * The column
+     * <code>public.historico_cuenca_segura_diario.fecha_registro</code>.
+     */
+    public final TableField<HistoricoCuencaSeguraDiarioRecord, LocalDateTime> FECHA_REGISTRO = createField(DSL.name("fecha_registro"), SQLDataType.LOCALDATETIME(6).defaultValue(DSL.field(DSL.raw("CURRENT_TIMESTAMP"), SQLDataType.LOCALDATETIME)), this, "");
+
+    /**
+     * The column
+     * <code>public.historico_cuenca_segura_diario.precipitacion_mm_chs</code>.
+     */
+    public final TableField<HistoricoCuencaSeguraDiarioRecord, BigDecimal> PRECIPITACION_MM_CHS = createField(DSL.name("precipitacion_mm_chs"), SQLDataType.NUMERIC(10, 2).defaultValue(DSL.field(DSL.raw("0.0"), SQLDataType.NUMERIC)), this, "");
 
     private HistoricoCuencaSeguraDiario(Name alias, Table<HistoricoCuencaSeguraDiarioRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
@@ -81,6 +117,16 @@ public class HistoricoCuencaSeguraDiario extends TableImpl<HistoricoCuencaSegura
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
+    }
+
+    @Override
+    public Identity<HistoricoCuencaSeguraDiarioRecord, Integer> getIdentity() {
+        return (Identity<HistoricoCuencaSeguraDiarioRecord, Integer>) super.getIdentity();
+    }
+
+    @Override
+    public UniqueKey<HistoricoCuencaSeguraDiarioRecord> getPrimaryKey() {
+        return Keys.HISTORICO_CUENCA_SEGURA_DIARIO_PKEY;
     }
 
     @Override

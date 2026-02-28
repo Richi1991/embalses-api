@@ -13,6 +13,7 @@ import java.util.Collection;
 
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.Identity;
 import org.jooq.Name;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
@@ -97,6 +98,11 @@ public class LecturaCaucesHoraria extends TableImpl<LecturaCaucesHorariaRecord> 
      */
     public final TableField<LecturaCaucesHorariaRecord, OffsetDateTime> CREATED_AT = createField(DSL.name("created_at"), SQLDataType.TIMESTAMPWITHTIMEZONE(6).nullable(false).defaultValue(DSL.field(DSL.raw("now()"), SQLDataType.TIMESTAMPWITHTIMEZONE)), this, "");
 
+    /**
+     * The column <code>public.lectura_cauces_horaria.id</code>.
+     */
+    public final TableField<LecturaCaucesHorariaRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
+
     private LecturaCaucesHoraria(Name alias, Table<LecturaCaucesHorariaRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
@@ -131,6 +137,11 @@ public class LecturaCaucesHoraria extends TableImpl<LecturaCaucesHorariaRecord> 
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
+    }
+
+    @Override
+    public Identity<LecturaCaucesHorariaRecord, Integer> getIdentity() {
+        return (Identity<LecturaCaucesHorariaRecord, Integer>) super.getIdentity();
     }
 
     @Override

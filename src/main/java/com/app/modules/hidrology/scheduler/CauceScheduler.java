@@ -16,7 +16,17 @@ public class CauceScheduler {
     public void insertCaudalesRealTime() {
         try {
             System.out.println("Iniciando scraping automático...");
-            cauceService.insertCaudalesRealTime();
+            cauceService.insertCaudalesRealTime(Boolean.TRUE);
+        } catch (Exception e) {
+            System.err.println("Error al obtener o insertar en la tabla lecturas caudales: " + e.getMessage());
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void insertCaudalesHistorico() {
+        try {
+            System.out.println("Iniciando scraping automático...");
+            cauceService.insertCaudalesRealTime(Boolean.FALSE);
         } catch (Exception e) {
             System.err.println("Error al obtener o insertar en la tabla lecturas caudales: " + e.getMessage());
         }

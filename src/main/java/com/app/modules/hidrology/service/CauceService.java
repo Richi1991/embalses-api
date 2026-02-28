@@ -82,7 +82,7 @@ public class CauceService {
         }
     }
 
-    public void insertCaudalesRealTime() throws FunctionalExceptions {
+    public void insertCaudalesRealTime(Boolean isHorario) throws FunctionalExceptions {
         try {
             Document doc = Jsoup.connect("https://saihweb.chsegura.es/apps/iVisor/obtener_datos.php")
                     .data("action", "consultar_cauces_topo")
@@ -118,16 +118,12 @@ public class CauceService {
                     porcentajeNivel = Double.parseDouble(cauceDto.porcentaje().replace(",", "."));
                 }
 
-                inserts.add(dsl.insertInto(LECTURA_CAUCES_HORARIA)
-                        .set(LECTURA_CAUCES_HORARIA.CODIGO, cauceDto.codigoPuntoMedicion())
-                        .set(LECTURA_CAUCES_HORARIA.NOMBRE, cauceDto.nombre())
-                        .set(LECTURA_CAUCES_HORARIA.ULTIMO_DATO_NIVEL, ultimoDatoNivel)
-                        .set(LECTURA_CAUCES_HORARIA.ULTIMO_DATO_CAUDAL, ultimoDatoCaudal)
-                        .set(LECTURA_CAUCES_HORARIA.PORCENTAJE_NIVEL, porcentajeNivel)
-                        .set(LECTURA_CAUCES_HORARIA.COTA_MAXIMA_SECCION, cotaMaxima)
-                        .set(LECTURA_CAUCES_HORARIA.LATITUD, coordinates.latitud())
-                        .set(LECTURA_CAUCES_HORARIA.LONGITUD, coordinates.longitud())
-                        .set(LECTURA_CAUCES_HORARIA.CREATED_AT, OffsetDateTime.now()));
+                if (isHorario) {
+                    cauceDAO.insertarDatosCaudalesHorarios(cauceDto, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
+                } else {
+                    cauceDAO.insertarDatosCaudalesDiarios(cauceDto, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
+                }
+
             });
 
             if (!inserts.isEmpty()) {
@@ -138,6 +134,8 @@ public class CauceService {
             Exceptions.EMB_E_0016.lanzarExcepcionCausada(e);
         }
     }
+
+
 
     public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
         javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[]{

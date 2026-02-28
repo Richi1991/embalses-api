@@ -19,7 +19,7 @@
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jooq.codegen.skip>true</jooq.codegen.skip>
+        <jooq.codegen.skip>false</jooq.codegen.skip>
 
         <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
         <db.user>none</db.user>
@@ -183,7 +183,7 @@
                         <database>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|
-                                (?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones| (?i)cauces | (?i)lectura_cauces_horaria</includes>
+                                (?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones| (?i)cauces | (?i)lectura_cauces_horaria | (?i)lectura_cauces_diaria</includes>
                             <inputSchema>public</inputSchema>
                             <includeRoutines>false</includeRoutines>
                             <includePackageRoutines>false</includePackageRoutines>
