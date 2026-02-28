@@ -71,6 +71,11 @@
             <artifactId>jooq-codegen</artifactId>
             <version>3.19.16</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+        </dependency>
 
         <dependency>
             <groupId>org.jsoup</groupId>
@@ -177,7 +182,8 @@
                     <generator>
                         <database>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
-                            <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|(?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones</includes>
+                            <includes>(?i)embalses|(?i)estaciones_meteorologicas|(?i)precipitaciones|(?i)lecturas_embalses|(?i)historico_cuenca_segura|
+                                (?i)historico_cuenca_segura_diario|(?i)historico_embalses|(?i)historico_precipitaciones| (?i)cauces | (?i)lectura_cauces_horaria</includes>
                             <inputSchema>public</inputSchema>
                             <includeRoutines>false</includeRoutines>
                             <includePackageRoutines>false</includePackageRoutines>

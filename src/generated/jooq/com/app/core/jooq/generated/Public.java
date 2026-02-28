@@ -4,12 +4,14 @@
 package com.app.core.jooq.generated;
 
 
+import com.app.core.jooq.generated.tables.Cauces;
 import com.app.core.jooq.generated.tables.Embalses;
 import com.app.core.jooq.generated.tables.EstacionesMeteorologicas;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
+import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
 
@@ -33,6 +35,12 @@ public class Public extends SchemaImpl {
      * The reference instance of <code>public</code>
      */
     public static final Public PUBLIC = new Public();
+
+    /**
+     * Información de los cauces como el nombre, identificador, coordenadas y
+     * altura maxima
+     */
+    public final Cauces CAUCES = Cauces.CAUCES;
 
     /**
      * The table <code>public.embalses</code>.
@@ -65,6 +73,12 @@ public class Public extends SchemaImpl {
     public final HistoricoPrecipitaciones HISTORICO_PRECIPITACIONES = HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES;
 
     /**
+     * Tabla donde se guardan los valores horarios de las lecturas de los
+     * caudales en los distintos cauces de la CHS
+     */
+    public final LecturaCaucesHoraria LECTURA_CAUCES_HORARIA = LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA;
+
+    /**
      * The table <code>public.lecturas_embalses</code>.
      */
     public final LecturasEmbalses LECTURAS_EMBALSES = LecturasEmbalses.LECTURAS_EMBALSES;
@@ -90,12 +104,14 @@ public class Public extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
+            Cauces.CAUCES,
             Embalses.EMBALSES,
             EstacionesMeteorologicas.ESTACIONES_METEOROLOGICAS,
             HistoricoCuencaSegura.HISTORICO_CUENCA_SEGURA,
             HistoricoCuencaSeguraDiario.HISTORICO_CUENCA_SEGURA_DIARIO,
             HistoricoEmbalses.HISTORICO_EMBALSES,
             HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES,
+            LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA,
             LecturasEmbalses.LECTURAS_EMBALSES,
             Precipitaciones.PRECIPITACIONES
         );

@@ -4,12 +4,14 @@
 package com.app.core.jooq.generated;
 
 
+import com.app.core.jooq.generated.tables.Cauces;
 import com.app.core.jooq.generated.tables.Embalses;
 import com.app.core.jooq.generated.tables.EstacionesMeteorologicas;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
+import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
 
@@ -19,6 +21,12 @@ import com.app.core.jooq.generated.tables.Precipitaciones;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
+
+    /**
+     * Información de los cauces como el nombre, identificador, coordenadas y
+     * altura maxima
+     */
+    public static final Cauces CAUCES = Cauces.CAUCES;
 
     /**
      * The table <code>public.embalses</code>.
@@ -49,6 +57,12 @@ public class Tables {
      * The table <code>public.historico_precipitaciones</code>.
      */
     public static final HistoricoPrecipitaciones HISTORICO_PRECIPITACIONES = HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES;
+
+    /**
+     * Tabla donde se guardan los valores horarios de las lecturas de los
+     * caudales en los distintos cauces de la CHS
+     */
+    public static final LecturaCaucesHoraria LECTURA_CAUCES_HORARIA = LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA;
 
     /**
      * The table <code>public.lecturas_embalses</code>.
