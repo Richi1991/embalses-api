@@ -11,8 +11,8 @@ import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
-import com.app.core.jooq.generated.tables.LecturaCaucesDiaria;
-import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
+import com.app.core.jooq.generated.tables.LecturaCaudalesDiaria;
+import com.app.core.jooq.generated.tables.LecturaCaudalesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
 
@@ -62,13 +62,13 @@ public class Tables {
     /**
      * historico de los cauces de la cuenca del segura
      */
-    public static final LecturaCaucesDiaria LECTURA_CAUCES_DIARIA = LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA;
+    public static final LecturaCaudalesDiaria LECTURA_CAUDALES_DIARIA = LecturaCaudalesDiaria.LECTURA_CAUDALES_DIARIA;
 
     /**
      * Tabla donde se guardan los valores horarios de las lecturas de los
      * caudales en los distintos cauces de la CHS
      */
-    public static final LecturaCaucesHoraria LECTURA_CAUCES_HORARIA = LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA;
+    public static final LecturaCaudalesHoraria LECTURA_CAUDALES_HORARIA = LecturaCaudalesHoraria.LECTURA_CAUDALES_HORARIA;
 
     /**
      * The table <code>public.lecturas_embalses</code>.

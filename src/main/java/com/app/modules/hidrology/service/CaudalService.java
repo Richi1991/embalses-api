@@ -3,9 +3,8 @@ package com.app.modules.hidrology.service;
 import com.app.core.common.Utils;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
-import com.app.modules.hidrology.dao.CauceDAO;
-import com.app.modules.hidrology.dto.CauceDTO;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.app.modules.hidrology.dao.CaudalDAO;
+import com.app.modules.hidrology.dto.CaudalDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
 import org.jooq.Query;
@@ -15,31 +14,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.app.core.jooq.generated.Tables.CAUCES;
-import static com.app.core.jooq.generated.Tables.LECTURA_CAUCES_HORARIA;
 
 @Service
-public class CauceService {
+public class CaudalService {
 
     @Autowired
-    private CauceDAO cauceDAO;
+    private CaudalDAO caudalDAO;
 
     @Autowired
     private DSLContext dsl;
 
-    public CauceService() throws NoSuchAlgorithmException, KeyManagementException {
+    public CaudalService() throws NoSuchAlgorithmException, KeyManagementException {
         this.configureSSL();
     }
 
@@ -52,21 +45,21 @@ public class CauceService {
 
             String jsonCaudales = doc.body().text();
             ObjectMapper mapper = new ObjectMapper();
-            List<CauceDTO> cauceDTOList = Stream.of(mapper.readValue(jsonCaudales, CauceDTO[].class)).toList();
+            List<CaudalDTO> caudalDTOList = Stream.of(mapper.readValue(jsonCaudales, CaudalDTO[].class)).toList();
 
             List<Query> inserts = new ArrayList<>();
-            cauceDTOList.stream().forEach(cauceDto -> {
+            caudalDTOList.stream().forEach(caudalDTO -> {
 
-                Utils.Coordinates coordinates = Utils.convert(cauceDto.latitud(), cauceDto.latitud());
+                Utils.Coordinates coordinates = Utils.convert(caudalDTO.latitud(), caudalDTO.latitud());
 
                 Double cotaMaxima = 0.0;
-                if (!cauceDto.cotaMaxima().contains("-")) {
-                    cotaMaxima = Double.parseDouble(cauceDto.cotaMaxima().replace(",", "."));
+                if (!caudalDTO.cotaMaxima().contains("-")) {
+                    cotaMaxima = Double.parseDouble(caudalDTO.cotaMaxima().replace(",", "."));
                 }
 
                 inserts.add(dsl.insertInto(CAUCES)
-                        .set(CAUCES.CODIGO, cauceDto.codigoPuntoMedicion())
-                        .set(CAUCES.NOMBRE, cauceDto.nombre())
+                        .set(CAUCES.CODIGO, caudalDTO.codigoPuntoMedicion())
+                        .set(CAUCES.NOMBRE, caudalDTO.nombre())
                         .set(CAUCES.COTAMAXIMA, cotaMaxima)
                         .set(CAUCES.CREATED_AT, OffsetDateTime.now())
                         .set(CAUCES.LATITUD, coordinates.latitud())
@@ -91,37 +84,37 @@ public class CauceService {
 
             String jsonCaudales = doc.body().text();
             ObjectMapper mapper = new ObjectMapper();
-            List<CauceDTO> cauceDTOList = Stream.of(mapper.readValue(jsonCaudales, CauceDTO[].class)).toList();
+            List<CaudalDTO> caudalDTOList = Stream.of(mapper.readValue(jsonCaudales, CaudalDTO[].class)).toList();
 
             List<Query> inserts = new ArrayList<>();
-            cauceDTOList.stream().forEach(cauceDto -> {
+            caudalDTOList.stream().forEach(caudalDTO -> {
 
-                Utils.Coordinates coordinates = Utils.convert(cauceDto.latitud(), cauceDto.latitud());
+                Utils.Coordinates coordinates = Utils.convert(caudalDTO.latitud(), caudalDTO.latitud());
 
                 Double cotaMaxima = 0.0;
-                if (!cauceDto.cotaMaxima().contains("-")) {
-                    cotaMaxima = Double.parseDouble(cauceDto.cotaMaxima().replace(",", "."));
+                if (!caudalDTO.cotaMaxima().contains("-")) {
+                    cotaMaxima = Double.parseDouble(caudalDTO.cotaMaxima().replace(",", "."));
                 }
 
                 Double ultimoDatoNivel = 0.0;
-                if (!cauceDto.ultimoDatoNivel().contains("-")) {
-                    ultimoDatoNivel = Double.parseDouble(cauceDto.ultimoDatoNivel().replace(",", "."));
+                if (!caudalDTO.ultimoDatoNivel().contains("-")) {
+                    ultimoDatoNivel = Double.parseDouble(caudalDTO.ultimoDatoNivel().replace(",", "."));
                 }
 
                 Double ultimoDatoCaudal = 0.0;
-                if (!cauceDto.ultimoDatoCaudal().contains("-")) {
-                    ultimoDatoCaudal = Double.parseDouble(cauceDto.ultimoDatoCaudal().replace(",", "."));
+                if (!caudalDTO.ultimoDatoCaudal().contains("-")) {
+                    ultimoDatoCaudal = Double.parseDouble(caudalDTO.ultimoDatoCaudal().replace(",", "."));
                 }
 
                 Double porcentajeNivel = 0.0;
-                if (!cauceDto.porcentaje().contains("-")) {
-                    porcentajeNivel = Double.parseDouble(cauceDto.porcentaje().replace(",", "."));
+                if (!caudalDTO.porcentaje().contains("-")) {
+                    porcentajeNivel = Double.parseDouble(caudalDTO.porcentaje().replace(",", "."));
                 }
 
                 if (isHorario) {
-                    cauceDAO.insertarDatosCaudalesHorarios(cauceDto, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
+                    caudalDAO.insertarDatosCaudalesHorarios(caudalDTO, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
                 } else {
-                    cauceDAO.insertarDatosCaudalesDiarios(cauceDto, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
+                    caudalDAO.insertarDatosCaudalesDiarios(caudalDTO, inserts, ultimoDatoNivel, ultimoDatoCaudal, porcentajeNivel, cotaMaxima, coordinates);
                 }
 
             });

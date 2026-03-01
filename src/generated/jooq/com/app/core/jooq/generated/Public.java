@@ -11,8 +11,8 @@ import com.app.core.jooq.generated.tables.HistoricoCuencaSegura;
 import com.app.core.jooq.generated.tables.HistoricoCuencaSeguraDiario;
 import com.app.core.jooq.generated.tables.HistoricoEmbalses;
 import com.app.core.jooq.generated.tables.HistoricoPrecipitaciones;
-import com.app.core.jooq.generated.tables.LecturaCaucesDiaria;
-import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
+import com.app.core.jooq.generated.tables.LecturaCaudalesDiaria;
+import com.app.core.jooq.generated.tables.LecturaCaudalesHoraria;
 import com.app.core.jooq.generated.tables.LecturasEmbalses;
 import com.app.core.jooq.generated.tables.Precipitaciones;
 
@@ -76,13 +76,13 @@ public class Public extends SchemaImpl {
     /**
      * historico de los cauces de la cuenca del segura
      */
-    public final LecturaCaucesDiaria LECTURA_CAUCES_DIARIA = LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA;
+    public final LecturaCaudalesDiaria LECTURA_CAUDALES_DIARIA = LecturaCaudalesDiaria.LECTURA_CAUDALES_DIARIA;
 
     /**
      * Tabla donde se guardan los valores horarios de las lecturas de los
      * caudales en los distintos cauces de la CHS
      */
-    public final LecturaCaucesHoraria LECTURA_CAUCES_HORARIA = LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA;
+    public final LecturaCaudalesHoraria LECTURA_CAUDALES_HORARIA = LecturaCaudalesHoraria.LECTURA_CAUDALES_HORARIA;
 
     /**
      * The table <code>public.lecturas_embalses</code>.
@@ -117,8 +117,8 @@ public class Public extends SchemaImpl {
             HistoricoCuencaSeguraDiario.HISTORICO_CUENCA_SEGURA_DIARIO,
             HistoricoEmbalses.HISTORICO_EMBALSES,
             HistoricoPrecipitaciones.HISTORICO_PRECIPITACIONES,
-            LecturaCaucesDiaria.LECTURA_CAUCES_DIARIA,
-            LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA,
+            LecturaCaudalesDiaria.LECTURA_CAUDALES_DIARIA,
+            LecturaCaudalesHoraria.LECTURA_CAUDALES_HORARIA,
             LecturasEmbalses.LECTURAS_EMBALSES,
             Precipitaciones.PRECIPITACIONES
         );

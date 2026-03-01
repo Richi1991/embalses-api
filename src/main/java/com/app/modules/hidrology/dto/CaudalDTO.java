@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-public record CauceDTO(
+public record CaudalDTO(
         @JsonProperty("CodPuntoMedicion")
         String codigoPuntoMedicion,
         @JsonProperty("NombreCortoPM")

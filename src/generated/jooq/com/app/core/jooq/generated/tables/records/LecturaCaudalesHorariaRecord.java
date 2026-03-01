@@ -4,7 +4,7 @@
 package com.app.core.jooq.generated.tables.records;
 
 
-import com.app.core.jooq.generated.tables.LecturaCaucesHoraria;
+import com.app.core.jooq.generated.tables.LecturaCaudalesHoraria;
 
 import java.time.OffsetDateTime;
 
@@ -17,75 +17,79 @@ import org.jooq.impl.UpdatableRecordImpl;
  * en los distintos cauces de la CHS
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class LecturaCaucesHorariaRecord extends UpdatableRecordImpl<LecturaCaucesHorariaRecord> {
+public class LecturaCaudalesHorariaRecord extends UpdatableRecordImpl<LecturaCaudalesHorariaRecord> {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.codigo</code>.
+     * Setter for <code>public.lectura_caudales_horaria.codigo</code>.
      */
     public void setCodigo(String value) {
         set(0, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.codigo</code>.
+     * Getter for <code>public.lectura_caudales_horaria.codigo</code>.
      */
     public String getCodigo() {
         return (String) get(0);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.nombre</code>.
+     * Setter for <code>public.lectura_caudales_horaria.nombre</code>.
      */
     public void setNombre(String value) {
         set(1, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.nombre</code>.
+     * Getter for <code>public.lectura_caudales_horaria.nombre</code>.
      */
     public String getNombre() {
         return (String) get(1);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.ultimo_dato_nivel</code>.
+     * Setter for
+     * <code>public.lectura_caudales_horaria.ultimo_dato_nivel</code>.
      */
     public void setUltimoDatoNivel(Double value) {
         set(2, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.ultimo_dato_nivel</code>.
+     * Getter for
+     * <code>public.lectura_caudales_horaria.ultimo_dato_nivel</code>.
      */
     public Double getUltimoDatoNivel() {
         return (Double) get(2);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.ultimo_dato_caudal</code>.
+     * Setter for
+     * <code>public.lectura_caudales_horaria.ultimo_dato_caudal</code>.
      */
     public void setUltimoDatoCaudal(Double value) {
         set(3, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.ultimo_dato_caudal</code>.
+     * Getter for
+     * <code>public.lectura_caudales_horaria.ultimo_dato_caudal</code>.
      */
     public Double getUltimoDatoCaudal() {
         return (Double) get(3);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.porcentaje_nivel</code>.
+     * Setter for <code>public.lectura_caudales_horaria.porcentaje_nivel</code>.
      */
     public void setPorcentajeNivel(Double value) {
         set(4, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.porcentaje_nivel</code>.
+     * Getter for <code>public.lectura_caudales_horaria.porcentaje_nivel</code>.
      */
     public Double getPorcentajeNivel() {
         return (Double) get(4);
@@ -93,7 +97,7 @@ public class LecturaCaucesHorariaRecord extends UpdatableRecordImpl<LecturaCauce
 
     /**
      * Setter for
-     * <code>public.lectura_cauces_horaria.cota_maxima_seccion</code>.
+     * <code>public.lectura_caudales_horaria.cota_maxima_seccion</code>.
      */
     public void setCotaMaximaSeccion(Double value) {
         set(5, value);
@@ -101,63 +105,63 @@ public class LecturaCaucesHorariaRecord extends UpdatableRecordImpl<LecturaCauce
 
     /**
      * Getter for
-     * <code>public.lectura_cauces_horaria.cota_maxima_seccion</code>.
+     * <code>public.lectura_caudales_horaria.cota_maxima_seccion</code>.
      */
     public Double getCotaMaximaSeccion() {
         return (Double) get(5);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.latitud</code>.
+     * Setter for <code>public.lectura_caudales_horaria.latitud</code>.
      */
     public void setLatitud(Double value) {
         set(6, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.latitud</code>.
+     * Getter for <code>public.lectura_caudales_horaria.latitud</code>.
      */
     public Double getLatitud() {
         return (Double) get(6);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.longitud</code>.
+     * Setter for <code>public.lectura_caudales_horaria.longitud</code>.
      */
     public void setLongitud(Double value) {
         set(7, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.longitud</code>.
+     * Getter for <code>public.lectura_caudales_horaria.longitud</code>.
      */
     public Double getLongitud() {
         return (Double) get(7);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.created_at</code>.
+     * Setter for <code>public.lectura_caudales_horaria.created_at</code>.
      */
     public void setCreatedAt(OffsetDateTime value) {
         set(8, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.created_at</code>.
+     * Getter for <code>public.lectura_caudales_horaria.created_at</code>.
      */
     public OffsetDateTime getCreatedAt() {
         return (OffsetDateTime) get(8);
     }
 
     /**
-     * Setter for <code>public.lectura_cauces_horaria.id</code>.
+     * Setter for <code>public.lectura_caudales_horaria.id</code>.
      */
     public void setId(Integer value) {
         set(9, value);
     }
 
     /**
-     * Getter for <code>public.lectura_cauces_horaria.id</code>.
+     * Getter for <code>public.lectura_caudales_horaria.id</code>.
      */
     public Integer getId() {
         return (Integer) get(9);
@@ -177,17 +181,17 @@ public class LecturaCaucesHorariaRecord extends UpdatableRecordImpl<LecturaCauce
     // -------------------------------------------------------------------------
 
     /**
-     * Create a detached LecturaCaucesHorariaRecord
+     * Create a detached LecturaCaudalesHorariaRecord
      */
-    public LecturaCaucesHorariaRecord() {
-        super(LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA);
+    public LecturaCaudalesHorariaRecord() {
+        super(LecturaCaudalesHoraria.LECTURA_CAUDALES_HORARIA);
     }
 
     /**
-     * Create a detached, initialised LecturaCaucesHorariaRecord
+     * Create a detached, initialised LecturaCaudalesHorariaRecord
      */
-    public LecturaCaucesHorariaRecord(String codigo, String nombre, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaximaSeccion, Double latitud, Double longitud, OffsetDateTime createdAt, Integer id) {
-        super(LecturaCaucesHoraria.LECTURA_CAUCES_HORARIA);
+    public LecturaCaudalesHorariaRecord(String codigo, String nombre, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaximaSeccion, Double latitud, Double longitud, OffsetDateTime createdAt, Integer id) {
+        super(LecturaCaudalesHoraria.LECTURA_CAUDALES_HORARIA);
 
         setCodigo(codigo);
         setNombre(nombre);
