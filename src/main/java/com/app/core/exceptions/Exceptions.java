@@ -19,7 +19,8 @@ public enum Exceptions {
     EMB_E_0013(Constants.EMB0013, "Ha habido un error obteniendo el historico de la cuenca del segura de la tabla: %s"),
     EMB_E_0014(Constants.EMB0014, "Ha habido un error obteniendo el historico de embalse por id de embalse: %s"),
     EMB_E_0015(Constants.EMB0015, "Ha habido un error obteniendo el último valor de volumen de los embalses de la cuenca del segura y sus coordenadas: %s"),
-    EMB_E_0016(Constants.EMB0016, "Ha habido un error obteniendo el último valor de caudales: %s");
+    EMB_E_0016(Constants.EMB0016, "Ha habido un error insertando el último valor de caudales: %s"),
+    EMB_E_0017(Constants.EMB0017, "Ha habido un error obteniendo el último valor de caudales medios horarios: %s");
 
     private String codigoError;
     private String descripcionError;

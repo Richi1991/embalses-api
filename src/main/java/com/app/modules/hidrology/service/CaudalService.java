@@ -5,23 +5,30 @@ import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.hidrology.dao.CaudalDAO;
 import com.app.modules.hidrology.dto.CaudalDTO;
+import com.app.modules.hidrology.dto.EstadisticaCuencaDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Query;
+import org.jooq.impl.DSL;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static com.app.core.jooq.generated.Tables.CAUCES;
+import static com.app.core.jooq.generated.Tables.LECTURA_CAUDALES_HORARIA;
+import static org.jooq.impl.DSL.avg;
 
 @Service
 public class CaudalService {
@@ -128,6 +135,10 @@ public class CaudalService {
         }
     }
 
+    public List<EstadisticaCuencaDTO> getCaudalesHorariosChsFilteredByDay(int days) throws FunctionalExceptions {
+        return caudalDAO.getCaudalesHorariosChsFilteredByDay(days);
+    }
+
 
 
     public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {
@@ -149,4 +160,5 @@ public class CaudalService {
         sc.init(null, trustAllCerts, new java.security.SecureRandom());
         javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
+
 }

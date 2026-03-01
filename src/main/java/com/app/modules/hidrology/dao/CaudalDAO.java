@@ -1,18 +1,27 @@
 package com.app.modules.hidrology.dao;
 
 import com.app.core.common.Utils;
+import com.app.core.exceptions.Exceptions;
+import com.app.core.exceptions.FunctionalExceptions;
 import com.app.modules.hidrology.dto.CaudalDTO;
+import com.app.modules.hidrology.dto.EstadisticaCuencaDTO;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Query;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.app.core.jooq.generated.Tables.LECTURA_CAUDALES_DIARIA;
 import static com.app.core.jooq.generated.Tables.LECTURA_CAUDALES_HORARIA;
+import static org.jooq.impl.DSL.avg;
 
 @Repository
 public class CaudalDAO {
@@ -44,5 +53,36 @@ public class CaudalDAO {
                 .set(LECTURA_CAUDALES_DIARIA.LATITUD, coordinates.latitud())
                 .set(LECTURA_CAUDALES_DIARIA.LONGITUD, coordinates.longitud())
                 .set(LECTURA_CAUDALES_DIARIA.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Madrid"))));
+    }
+
+    public List<EstadisticaCuencaDTO> getCaudalesHorariosChsFilteredByDay(int days) throws FunctionalExceptions {
+        List<EstadisticaCuencaDTO> estadisticaCuencaDTOList = new ArrayList<>();
+        try {
+            Field<LocalDateTime> intervalo = DSL.field(
+                    "date_trunc('minute', {0}) - INTERVAL '1 minute' * (EXTRACT(minute FROM {0})::int % 30)",
+                    LocalDateTime.class,
+                    LECTURA_CAUDALES_HORARIA.CREATED_AT
+            ).as("intervalo");
+
+            estadisticaCuencaDTOList = dsl.select(
+                            intervalo,
+                            DSL.round(avg(LECTURA_CAUDALES_HORARIA.ULTIMO_DATO_NIVEL).cast(BigDecimal.class), 2).as("mediaUltimoDatoNivel"),
+                            DSL.round(avg(LECTURA_CAUDALES_HORARIA.ULTIMO_DATO_CAUDAL).cast(BigDecimal.class), 2).as("mediaUltimoDatoCaudal"),
+                            DSL.round(avg(LECTURA_CAUDALES_HORARIA.PORCENTAJE_NIVEL).cast(BigDecimal.class), 2).as("mediaPorcentajeNivel"))
+                    .from(LECTURA_CAUDALES_HORARIA)
+                    .where(LECTURA_CAUDALES_HORARIA.CREATED_AT.greaterOrEqual(OffsetDateTime.now().minusDays(days)))
+                    .groupBy(intervalo)
+                    .orderBy(intervalo.desc())
+                    .fetch()
+                    .map(record -> new EstadisticaCuencaDTO(
+                            record.get("intervalo", LocalDateTime.class),
+                            record.get("mediaUltimoDatoNivel", Double.class),
+                            record.get("mediaUltimoDatoCaudal", Double.class),
+                            record.get("mediaPorcentajeNivel", Double.class)
+                    ));
+        } catch (RuntimeException e) {
+            Exceptions.EMB_E_0017.lanzarExcepcionCausada(e);
+        }
+        return estadisticaCuencaDTOList;
     }
 }

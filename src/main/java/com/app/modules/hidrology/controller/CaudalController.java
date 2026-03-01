@@ -1,12 +1,12 @@
 package com.app.modules.hidrology.controller;
 
 import com.app.core.exceptions.FunctionalExceptions;
+import com.app.modules.hidrology.dto.EstadisticaCuencaDTO;
 import com.app.modules.hidrology.service.CaudalService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/caudales")
@@ -19,5 +19,10 @@ public class CaudalController {
     @GetMapping("/get_and_insert_cauces_chs")
     public void getAndInsertCaucesChs() throws FunctionalExceptions {
         caudalService.getAndInsertCaucesChs();
+    }
+
+    @GetMapping("/get_caudales_horarios_chs/{days}")
+    public List<EstadisticaCuencaDTO> getCaudalesHorariosChsFilteredByDay(@PathVariable int days) throws FunctionalExceptions {
+        return caudalService.getCaudalesHorariosChsFilteredByDay(days);
     }
 }
