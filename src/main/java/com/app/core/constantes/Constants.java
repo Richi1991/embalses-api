@@ -17,13 +17,9 @@ public class Constants {
     public static final String EMB0013 = "EMB_E_0013";
     public static final String EMB0014 = "EMB_E_0014";
     public static final String EMB0015 = "EMB_E_0015";
-    public static final String EMB0016 = "EMB_E_0016";
-    public static final String EMB0017 = "EMB_E_0017";
-    public static final String EMB0018 = "EMB_E_0018";
-    public static final String EMB0019 = "EMB_E_0019";
-    public static final String EMB0020 = "EMB_E_0020";
-    public static final String EMB0021 = "EMB_E_0021";
-    public static final String EMB0022 = "EMB_E_0022";
+
+    public static final String CAU0001 = "CAU_E_0001";
+    public static final String CAU0002 = "CAU_E_0002";
 
     public static final String UN_DIA = "1 day";
 
