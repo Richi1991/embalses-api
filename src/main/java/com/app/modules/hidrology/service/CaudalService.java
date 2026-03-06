@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.app.core.jooq.generated.Tables.CAUCES;
@@ -49,10 +50,12 @@ public class CaudalService {
             ObjectMapper mapper = new ObjectMapper();
             List<CaudalDTO> caudalDTOList = Stream.of(mapper.readValue(jsonCaudales, CaudalDTO[].class)).toList();
 
+            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadas();
+
             List<Query> inserts = new ArrayList<>();
             caudalDTOList.stream().forEach(caudalDTO -> {
 
-                Utils.Coordinates coordinates = Utils.convert(caudalDTO.latitud(), caudalDTO.latitud());
+                Double[] coordinates = mapaCodigoCoordenadas.get(caudalDTO.codigoPuntoMedicion());
 
                 Double cotaMaxima = 0.0;
                 if (!caudalDTO.cotaMaxima().contains("-")) {
@@ -64,8 +67,8 @@ public class CaudalService {
                         .set(CAUCES.NOMBRE, caudalDTO.nombre())
                         .set(CAUCES.COTAMAXIMA, cotaMaxima)
                         .set(CAUCES.CREATED_AT, OffsetDateTime.now())
-                        .set(CAUCES.LATITUD, coordinates.latitud())
-                        .set(CAUCES.LONGITUD, coordinates.longitud()));
+                        .set(CAUCES.LATITUD, coordinates[0])
+                        .set(CAUCES.LONGITUD, coordinates[1]));
             });
 
             if (!inserts.isEmpty()) {
@@ -88,10 +91,12 @@ public class CaudalService {
             ObjectMapper mapper = new ObjectMapper();
             List<CaudalDTO> caudalDTOList = Stream.of(mapper.readValue(jsonCaudales, CaudalDTO[].class)).toList();
 
+            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadas();
+
             List<Query> inserts = new ArrayList<>();
             caudalDTOList.stream().forEach(caudalDTO -> {
 
-                Utils.Coordinates coordinates = Utils.convert(caudalDTO.latitud(), caudalDTO.latitud());
+                Double[] coordinates = mapaCodigoCoordenadas.get(caudalDTO.codigoPuntoMedicion());
 
                 Double cotaMaxima = 0.0;
                 if (!caudalDTO.cotaMaxima().contains("-")) {

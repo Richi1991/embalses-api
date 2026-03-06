@@ -23,9 +23,6 @@ import java.util.List;
 
 import static com.app.core.jooq.generated.Tables.LECTURA_CAUDALES_DIARIA;
 import static com.app.core.jooq.generated.Tables.LECTURA_CAUDALES_HORARIA;
-import static java.util.Spliterator.DISTINCT;
-import static org.apache.pdfbox.cos.COSName.DESC;
-import static org.apache.pdfbox.cos.COSName.TIME_STAMP;
 import static org.jooq.impl.DSL.avg;
 
 @Repository
@@ -34,7 +31,7 @@ public class CaudalDAO {
     @Autowired
     private DSLContext dsl;
 
-    public void insertarDatosCaudalesHorarios(CaudalDTO caudalDTO, List<Query> inserts, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaxima, Utils.Coordinates coordinates) {
+    public void insertarDatosCaudalesHorarios(CaudalDTO caudalDTO, List<Query> inserts, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaxima, Double[] coordinates) {
         inserts.add(dsl.insertInto(LECTURA_CAUDALES_HORARIA)
                 .set(LECTURA_CAUDALES_HORARIA.CODIGO, caudalDTO.codigoPuntoMedicion())
                 .set(LECTURA_CAUDALES_HORARIA.NOMBRE, caudalDTO.nombre())
@@ -42,12 +39,12 @@ public class CaudalDAO {
                 .set(LECTURA_CAUDALES_HORARIA.ULTIMO_DATO_CAUDAL, ultimoDatoCaudal)
                 .set(LECTURA_CAUDALES_HORARIA.PORCENTAJE_NIVEL, porcentajeNivel)
                 .set(LECTURA_CAUDALES_HORARIA.COTA_MAXIMA_SECCION, cotaMaxima)
-                .set(LECTURA_CAUDALES_HORARIA.LATITUD, coordinates.latitud())
-                .set(LECTURA_CAUDALES_HORARIA.LONGITUD, coordinates.longitud())
+                .set(LECTURA_CAUDALES_HORARIA.LATITUD, coordinates[0])
+                .set(LECTURA_CAUDALES_HORARIA.LONGITUD, coordinates[1])
                 .set(LECTURA_CAUDALES_HORARIA.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Madrid"))));
     }
 
-    public void insertarDatosCaudalesDiarios(CaudalDTO caudalDTO, List<Query> inserts, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaxima, Utils.Coordinates coordinates) {
+    public void insertarDatosCaudalesDiarios(CaudalDTO caudalDTO, List<Query> inserts, Double ultimoDatoNivel, Double ultimoDatoCaudal, Double porcentajeNivel, Double cotaMaxima, Double[] coordinates) {
         inserts.add(dsl.insertInto(LECTURA_CAUDALES_DIARIA)
                 .set(LECTURA_CAUDALES_DIARIA.CODIGO, caudalDTO.codigoPuntoMedicion())
                 .set(LECTURA_CAUDALES_DIARIA.NOMBRE, caudalDTO.nombre())
@@ -55,8 +52,8 @@ public class CaudalDAO {
                 .set(LECTURA_CAUDALES_DIARIA.ULTIMO_DATO_CAUDAL, ultimoDatoCaudal)
                 .set(LECTURA_CAUDALES_DIARIA.PORCENTAJE_NIVEL, porcentajeNivel)
                 .set(LECTURA_CAUDALES_DIARIA.COTA_MAXIMA_SECCION, cotaMaxima)
-                .set(LECTURA_CAUDALES_DIARIA.LATITUD, coordinates.latitud())
-                .set(LECTURA_CAUDALES_DIARIA.LONGITUD, coordinates.longitud())
+                .set(LECTURA_CAUDALES_DIARIA.LATITUD, coordinates[0])
+                .set(LECTURA_CAUDALES_DIARIA.LONGITUD, coordinates[1])
                 .set(LECTURA_CAUDALES_DIARIA.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Madrid"))));
     }
 

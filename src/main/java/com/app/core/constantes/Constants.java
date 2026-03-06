@@ -1,5 +1,6 @@
 package com.app.core.constantes;
 
+
 public class Constants {
 
     public static final String EMB0001 = "EMB_E_0001";

@@ -31,4 +31,5 @@ public class CaudalController {
     public List<UltimaLecturaCaudalDTO> getLastCaudalAndPosition() throws FunctionalExceptions {
         return caudalService.getLastCaudalAndPosition();
     }
+
 }
