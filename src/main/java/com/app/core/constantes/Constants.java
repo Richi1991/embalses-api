@@ -28,5 +28,6 @@ public class Constants {
     public static final String TABLA_HISTORICO_CUENCA_SEGURA_DIARIO = "historico_cuenca_segura_diario";
 
     public static final Double VOLUMEN_MAXIMO_CUENCA_SEGURA = 1140.0;
+    public static final Double VOLUMEN_MAXIMO_CUENCA_JUCAR = 2846.0;
     public static final String AEMET = "aemet";
 }

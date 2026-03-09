@@ -5,6 +5,7 @@ import com.app.modules.hidrology.dto.*;
 import com.app.modules.hidrology.dao.EmbalseDAO;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
 import org.jooq.Query;
 import org.jooq.impl.DSL;
@@ -14,12 +15,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -196,6 +205,16 @@ public class EmbalseService {
         porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
 
         embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
+    }
+
+    public String getEmbalsesChj() {
+        RestTemplate rt = new RestTemplate();
+        String html = rt.getForObject("https://saih.chj.es/resumen-embalses", String.class);
+
+        // Extraer el JSON de subCuencasArray
+        int start = html.indexOf("let subCuencasArray = ") + "let subCuencasArray = ".length();
+        int end = html.indexOf(";", start);
+        return html.substring(start, end); // JSON puro
     }
 
     public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {

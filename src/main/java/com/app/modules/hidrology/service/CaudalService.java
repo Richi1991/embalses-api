@@ -64,7 +64,7 @@ public class CaudalService {
             ObjectMapper mapper = new ObjectMapper();
             List<CaudalDTO> caudalDTOList = Stream.of(mapper.readValue(jsonCaudales, CaudalDTO[].class)).toList();
 
-            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadas();
+            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadasCauces();
 
             List<Query> inserts = new ArrayList<>();
             caudalDTOList.stream().forEach(caudalDTO -> {
@@ -98,7 +98,7 @@ public class CaudalService {
         try {
             List<CaudalDTO> caudalDTOList = getTodosCaudales();
 
-            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadas();
+            Map<String, Double[]> mapaCodigoCoordenadas = Utils.obtenerMapaCoordenadasCauces();
 
             List<Query> inserts = new ArrayList<>();
             caudalDTOList.stream().forEach(caudalDTO -> {

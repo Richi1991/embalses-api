@@ -99,4 +99,9 @@ public class EmbalseController {
         return embalseService.getEmbalsesLastValueAndPosition();
     }
 
+    @GetMapping("/get_embalses_chj")
+    public String getEmbalsesChj(){
+        return embalseService.getEmbalsesChj();
+    }
+
 }
