@@ -1,25 +1,26 @@
 package com.app.modules.weather.service;
 
 import com.app.modules.weather.dto.EstacionesDTO;
+import com.app.modules.weather.dto.PluvioChsDTO;
 import com.app.modules.weather.dto.PrecipitacionesDTO;
-import io.github.bonigarcia.wdm.WebDriverManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.sql.Timestamp;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.app.core.jooq.generated.Tables.ESTACIONES_METEOROLOGICAS;
 import static com.app.core.jooq.generated.Tables.PRECIPITACIONES;
@@ -61,113 +62,122 @@ public class PrecipitacionesService {
                 .fetchInto(EstacionesDTO.class);
     }
 
-    public WebDriver createDriver() {
-        // 1. Setup automático del driver compatible
-        WebDriverManager.chromedriver()
-                .driverVersion("145.0.7632.117")
-                .cachePath("/root/.cache/selenium")
-                .setup();
+    private HttpClient buildHttpClient() throws Exception {
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return null; }
+                    public void checkClientTrusted(X509Certificate[] c, String a) {}
+                    public void checkServerTrusted(X509Certificate[] c, String a) {}
+                }
+        }, new SecureRandom());
 
-        ChromeOptions options = new ChromeOptions();
+        return HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .connectTimeout(Duration.ofSeconds(15))
+                .build();
+    }
 
-        // 2. Lógica multiplataforma para el binario de Chrome
-        String chromeBin = System.getenv("CHROME_BIN");
+    private List<PluvioChsDTO> fetchPluvios(HttpClient client, int tipo) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://saihweb.chsegura.es/apps/iVisor/obtener_datos.php"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString("action=consultar_pluvios&tipo=" + tipo))
+                .timeout(Duration.ofSeconds(15))
+                .build();
 
-        if (chromeBin != null && !chromeBin.isEmpty()) {
-            // Si existe la variable (como en tu Dockerfile de Render), la usamos
-            options.setBinary(chromeBin);
-        } else {
-            // Si no hay variable y estamos en Linux (Render/Docker), intentamos la ruta estándar
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("linux")) {
-                options.setBinary("/usr/bin/google-chrome-stable");
-            }
-        }
-
-        // 3. Argumentos optimizados para Render y Windows
-        options.addArguments("--headless=new");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--window-size=800,600");
-        options.addArguments("--blink-settings=imagesEnabled=false");
-
-        return new ChromeDriver(options);
+        String body = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        return Arrays.asList(new ObjectMapper().readValue(body, PluvioChsDTO[].class));
     }
 
     public void getAndSavePrecipitacionesRealTime() {
-        WebDriver driver = createDriver();
-
         try {
-            driver.get("https://www.chsegura.es/es/cuenca/redes-de-control/saih/informe-horario-de-precipitaciones/");
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-            wait.until(ExpectedConditions.presenceOfElementLocated(By.id("tablaVisorPrecipitaciones")));
+            HttpClient client = buildHttpClient();
 
-            // Expandir tabla
-            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
-            js.executeScript("$('#tablaVisorPrecipitaciones').DataTable().page.len(500).draw();");
-            Thread.sleep(3000);
+            // Obtenemos los 6 tipos de acumulado (1h, 3h, 4h, 6h, 12h, 24h)
+            // tipo=0 es instantánea, la omitimos porque no la guardábamos antes
+            List<PluvioChsDTO> t1  = fetchPluvios(client, 1);
+            List<PluvioChsDTO> t2  = fetchPluvios(client, 2);
+            List<PluvioChsDTO> t4  = fetchPluvios(client, 4);
+            List<PluvioChsDTO> t5  = fetchPluvios(client, 5);
+            List<PluvioChsDTO> t6  = fetchPluvios(client, 6);
 
-            // CAPTURA RÁPIDA Y CIERRE (Clave para Render)
-            String htmlContent = driver.getPageSource();
-            driver.quit();
-            driver = null;
+            // Indexamos por código para cruzar los 5 tipos fácilmente
+            Map<String, PluvioChsDTO> map1h  = t1.stream().collect(Collectors.toMap(PluvioChsDTO::codPuntoMedicion, d -> d, (a, b) -> a));
+            Map<String, PluvioChsDTO> map3h  = t2.stream().collect(Collectors.toMap(PluvioChsDTO::codPuntoMedicion, d -> d, (a, b) -> a));
+            Map<String, PluvioChsDTO> map6h  = t4.stream().collect(Collectors.toMap(PluvioChsDTO::codPuntoMedicion, d -> d, (a, b) -> a));
+            Map<String, PluvioChsDTO> map12h = t5.stream().collect(Collectors.toMap(PluvioChsDTO::codPuntoMedicion, d -> d, (a, b) -> a));
+            Map<String, PluvioChsDTO> map24h = t6.stream().collect(Collectors.toMap(PluvioChsDTO::codPuntoMedicion, d -> d, (a, b) -> a));
 
-            // PROCESAMIENTO CON JSOUP MANTENIENDO TUS DTOs
-            Document doc = Jsoup.parse(htmlContent);
-            Elements filas = doc.select("#tablaVisorPrecipitaciones tbody tr");
-
-            java.sql.Timestamp fechaCaptura = new java.sql.Timestamp(System.currentTimeMillis());
-
+            Timestamp fechaCaptura = new Timestamp(System.currentTimeMillis());
             List<EstacionesDTO> batchDTO = new ArrayList<>();
-            int batchSize = 25;
 
-            for (Element fila : filas) {
-                Elements celdas = fila.select("td");
-                if (celdas.size() >= 8) {
-                    String punto = celdas.get(1).text().trim();
-                    if (!punto.isEmpty() && !punto.equalsIgnoreCase("No data available in table")) {
+            for (PluvioChsDTO base : t1) {
+                String cod = base.codPuntoMedicion();
 
-                        // Mantenemos tu lógica de DTOs
-                        PrecipitacionesDTO pDTO = new PrecipitacionesDTO();
-                        pDTO.setPrecipitacion1h(limpiarValor(celdas.get(3).text()));
-                        pDTO.setPrecipitacion3h(limpiarValor(celdas.get(4).text()));
-                        pDTO.setPrecipitacion6h(limpiarValor(celdas.get(5).text()));
-                        pDTO.setPrecipitacion12h(limpiarValor(celdas.get(6).text()));
-                        pDTO.setPrecipitacion24h(limpiarValor(celdas.get(7).text()));
+                PrecipitacionesDTO pDTO = new PrecipitacionesDTO();
+                pDTO.setPrecipitacion1h (limpiarValor(map1h .getOrDefault(cod, base).valorPrecip()));
+                pDTO.setPrecipitacion3h (limpiarValor(map3h .getOrDefault(cod, base).valorPrecip()));
+                pDTO.setPrecipitacion6h (limpiarValor(map6h .getOrDefault(cod, base).valorPrecip()));
+                pDTO.setPrecipitacion12h(limpiarValor(map12h.getOrDefault(cod, base).valorPrecip()));
+                pDTO.setPrecipitacion24h(limpiarValor(map24h.getOrDefault(cod, base).valorPrecip()));
 
-                        EstacionesDTO eDTO = new EstacionesDTO();
-                        eDTO.setIndicativo(punto);
-                        eDTO.setNombre(celdas.get(0).text().trim());
-                        eDTO.setFechaActualizacion(fechaCaptura);
-                        eDTO.setPrecipitacionesDTO(pDTO);
+                EstacionesDTO eDTO = new EstacionesDTO();
+                eDTO.setIndicativo(cod);
+                eDTO.setNombre(base.nombreCortoPM());
+                eDTO.setFechaActualizacion(fechaCaptura);
+                eDTO.setPrecipitacionesDTO(pDTO);
 
-                        batchDTO.add(eDTO);
-                    }
-                }
+                batchDTO.add(eDTO);
 
-                // Procesar y guardar en lotes para no inflar la RAM
-                if (batchDTO.size() >= batchSize) {
+                if (batchDTO.size() >= 25) {
                     guardarLote(batchDTO);
                     batchDTO.clear();
                 }
             }
 
-            // Guardar lo que quede
             if (!batchDTO.isEmpty()) {
                 guardarLote(batchDTO);
             }
 
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        } finally {
-            if (driver != null) driver.quit();
+            System.err.println("Error precipitaciones: " + e.getMessage());
         }
     }
 
     private void guardarLote(List<EstacionesDTO> dtos) {
-        // 1. Definimos la estructura de la consulta
+
+        // 1. Obtenemos todos los indicativos que sí existen en la tabla maestra
+        // Esto es una consulta rápida que devuelve un Set para búsquedas O(1)
+        Set<String> indicativosExistentes = dslContext
+                .select(ESTACIONES_METEOROLOGICAS.INDICATIVO)
+                .from(ESTACIONES_METEOROLOGICAS)
+                .fetchSet(ESTACIONES_METEOROLOGICAS.INDICATIVO);
+
+        // 2. Filtramos los DTOs: solo nos quedamos con los que tienen un indicativo válido
+        List<EstacionesDTO> dtosValidos = dtos.stream()
+                .filter(dto -> {
+                    String original = dto.getIndicativo();
+                    // Si termina en P + un solo número, le metemos el cero
+                    // Ejemplo: 01A01P1 -> 01A01P01
+                    String normalizado = original.replaceAll("P(\\d)$", "P0$1");
+
+                    boolean existe = indicativosExistentes.contains(normalizado);
+
+                    // Seteamos el normalizado para que la FK no falle al insertar
+                    if (existe) {
+                        dto.setIndicativo(normalizado);
+                    }
+                    return existe;
+                })
+                .toList();
+
+        if (dtosValidos.isEmpty()) {
+            System.out.println("Saltando lote: Ninguna estación del lote existe en la base de datos.");
+            return;
+        }
+
+        // 3. Definimos la estructura de la consulta
         var query = dslContext.insertInto(PRECIPITACIONES)
                 .columns(
                         PRECIPITACIONES.INDICATIVO,            // Parte de la PK
@@ -181,9 +191,9 @@ public class PrecipitacionesService {
                 )
                 .values((String) null, null, null, null, null, null, null, null); // Placeholders
 
-        // 2. Ejecutamos el batch mapeando los DTOs a un array de objetos
+        // 4. Ejecutamos el batch mapeando los DTOs a un array de objetos
         dslContext.batch(query)
-                .bind(dtos.stream().map(dto -> new Object[] {
+                .bind(dtosValidos.stream().map(dto -> new Object[] {
                         dto.getIndicativo(),
                         dto.getFechaActualizacion(),
                         dto.getNombre(),
@@ -195,7 +205,7 @@ public class PrecipitacionesService {
                 }).toArray(Object[][]::new))
                 .execute();
 
-        System.out.println("Lote de " + dtos.size() + " registros guardado con éxito en jOOQ.");
+        System.out.println("Lote de " + dtosValidos.size() + " registros guardado con éxito en jOOQ.");
     }
 
 }
