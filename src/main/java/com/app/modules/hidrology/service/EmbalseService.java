@@ -5,12 +5,16 @@ import com.app.modules.hidrology.dto.*;
 import com.app.modules.hidrology.dao.EmbalseDAO;
 import com.app.core.exceptions.Exceptions;
 import com.app.core.exceptions.FunctionalExceptions;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
 import org.jooq.Query;
 import org.jooq.impl.DSL;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.openqa.selenium.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.http.HttpClient;
@@ -30,6 +35,7 @@ import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,6 +51,8 @@ public class EmbalseService {
         this.configureSSL();
     }
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private static final Logger logger = LoggerFactory.getLogger(EmbalseService.class);
 
     @Autowired
@@ -53,7 +61,25 @@ public class EmbalseService {
     @Autowired
     private DSLContext dsl;
 
-    public record LecturaProcesada(int id, double hm3, double porc, double variacion, String tendencia) {}
+    public record
+    LecturaProcesada(int id, double hm3, double porc, double variacion, String tendencia) {}
+
+    // Record solo para deserializar del JSON
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record LecturaProcesadaChj(
+            @JsonProperty("idEstacionRemota") int idEstacionRemota,
+            @JsonProperty("valorVolumenEmbalse") double valorVolumenEmbalse,
+            @JsonProperty("fldFVolumenNMN") double capacidadMaxima  // necesario para calcular %
+    ) {}
+
+    public record LecturaChj(
+            int idEstacionRemota,
+            double volumenActual,
+            double capacidadMaxima,
+            double porc,
+            double variacion,
+            String tendencia
+    ) {}
 
     public void getEmbalsesDataAndInsertInLecturasEmbalses() throws FunctionalExceptions {
         try {
@@ -114,6 +140,64 @@ public class EmbalseService {
 
         } catch (Exception e) {
             Exceptions.EMB_E_0001.lanzarExcepcionCausada(e);
+        }
+    }
+
+    public void getEmbalsesChj() throws IOException {
+        RestTemplate rt = new RestTemplate();
+        String html = rt.getForObject("https://saih.chj.es/resumen-embalses", String.class);
+
+        // Extraer el JSON de subCuencasArray
+        int start = html.indexOf("let subCuencasArray = ") + "let subCuencasArray = ".length();
+        int end = html.indexOf(";", start);
+        String json = html.substring(start, end);
+
+        JsonNode root = mapper.readTree(json);
+
+        List<LecturaChj> lecturasNuevas = new ArrayList<>();
+        Map<Integer, Double> volumenAnterior = new HashMap<>();
+
+        for (JsonNode cuenca: root) {
+            JsonNode embalses = cuenca.get(1);
+            for (JsonNode embalse: embalses) {
+
+                LecturaProcesadaChj raw = mapper.treeToValue(embalse, LecturaProcesadaChj.class);
+                double porc = (raw.valorVolumenEmbalse() / raw.capacidadMaxima()) * 100;
+
+                double volPrevio = volumenAnterior.getOrDefault(raw.idEstacionRemota(), raw.valorVolumenEmbalse());
+                double variacion = raw.valorVolumenEmbalse() - volPrevio;
+                String tendencia = variacion > 0 ? "SUBIENDO" : variacion < 0 ? "BAJANDO" : "ESTABLE";
+
+
+                LecturaChj lectura = new LecturaChj(
+                        raw.idEstacionRemota(),
+                        raw.valorVolumenEmbalse(),
+                        raw.capacidadMaxima(),
+                        porc,
+                        variacion,
+                        tendencia
+                );
+
+                lecturasNuevas.add(lectura);
+            }
+        }
+
+        List<Query> inserts = new ArrayList<>();
+        for (LecturaChj l : lecturasNuevas) {
+            inserts.add(
+                    dsl.insertInto(LECTURAS_EMBALSES)
+                            .set(LECTURAS_EMBALSES.EMBALSE_ID, l.idEstacionRemota())
+                            .set(LECTURAS_EMBALSES.HM3_ACTUAL, BigDecimal.valueOf(l.volumenActual()))
+                            .set(LECTURAS_EMBALSES.PORCENTAJE, BigDecimal.valueOf(l.porc()))
+                            .set(LECTURAS_EMBALSES.VARIACION, BigDecimal.valueOf(l.variacion()))
+                            .set(LECTURAS_EMBALSES.TENDENCIA, l.tendencia())
+                            .set(LECTURAS_EMBALSES.FECHA_REGISTRO, DSL.currentLocalDateTime()) // O DSL.now()
+            );
+        }
+
+        // Ejecución atómica
+        if (!inserts.isEmpty()) {
+            dsl.batch(inserts).execute();
         }
     }
 
@@ -205,16 +289,6 @@ public class EmbalseService {
         porcentajeTotalCuenca = (volumenActualCuenca * 100) / Constants.VOLUMEN_MAXIMO_CUENCA_SEGURA;
 
         embalseDAO.insertarValoresEnHistoricoCuencaSegura(volumenActualCuenca, porcentajeTotalCuenca, Constants.TABLA_HISTORICO_CUENCA_SEGURA_DIARIO);
-    }
-
-    public String getEmbalsesChj() {
-        RestTemplate rt = new RestTemplate();
-        String html = rt.getForObject("https://saih.chj.es/resumen-embalses", String.class);
-
-        // Extraer el JSON de subCuencasArray
-        int start = html.indexOf("let subCuencasArray = ") + "let subCuencasArray = ".length();
-        int end = html.indexOf(";", start);
-        return html.substring(start, end); // JSON puro
     }
 
     public void configureSSL() throws NoSuchAlgorithmException, KeyManagementException {

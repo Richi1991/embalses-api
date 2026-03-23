@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.app.modules.hidrology.service.EmbalseService;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -100,8 +101,8 @@ public class EmbalseController {
     }
 
     @GetMapping("/get_embalses_chj")
-    public String getEmbalsesChj(){
-        return embalseService.getEmbalsesChj();
+    public void getEmbalsesChj() throws IOException {
+        embalseService.getEmbalsesChj();
     }
 
 }

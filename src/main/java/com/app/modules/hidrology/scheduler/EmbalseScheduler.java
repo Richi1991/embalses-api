@@ -50,6 +50,16 @@ public class EmbalseScheduler {
         }
     }
 
+    @Scheduled(cron = "0 0 * * * *")
+    public void getAndSaveHistoricoCuencaJucarHorario() {
+        try {
+            System.out.println("Iniciando scraping automático ch Jucar");
+            embalseService.getEmbalsesChj();
+        } catch (Exception e) {
+            System.err.println("Error al obtener o insertar en el historico cuenca Jucar horario: " + e.getMessage());
+        }
+    }
+
     @Scheduled(cron = "0 0 1 * * *") // A la 1:00 AM cada día
     public void getAndInsertHistoricoCuencaSegura() {
         try {
